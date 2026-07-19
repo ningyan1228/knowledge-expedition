@@ -56,20 +56,24 @@ export const levels: Level[] = [
 
 export type SecretQuestion = { id:string; levelId:string; knowledgeId:string; public:PublicQuestion; answer:SubmittedAnswer; explanation:AnswerExplanation; difficulty:number; kind:"basic"|"relation"|"application" };
 const optionIds = ["A","B","C","D"];
-function choices(correct: IdiomContent, distractors: IdiomContent[]) { return [correct,...distractors].map((item,index)=>({id:optionIds[index]!,text:item.meaning})); }
+function choices(correct: IdiomContent, distractors: IdiomContent[],correctIndex:number) {
+  const items=[...distractors];
+  items.splice(correctIndex,0,correct);
+  return items.map((item,index)=>({id:optionIds[index]!,text:item.meaning}));
+}
 function explanation(item: IdiomContent): AnswerExplanation { return { summary:item.meaning,whyCorrect:`“${item.name}”的核心语义是：${item.meaning}。`,whyUserAnswerWrong:"该选项忽略了成语的语义对象、感情色彩或使用条件。",commonMistake:item.commonMistake,usageScene:item.correctScene,relatedKnowledge:item.synonyms.map(name=>({id:name,name,relation:"近义辨析"})),memoryTip:item.memoryTip }; }
-function definitionQuestion(item: IdiomContent,index:number,levelId:string,prefix="def"):SecretQuestion { const others=[1,2,3].map(offset=>idioms[(index+offset*7)%idioms.length]!); const options=choices(item,others); return {id:`${prefix}-${item.id}`,levelId,knowledgeId:item.id,public:{questionId:`${prefix}-${item.id}`,knowledgeId:item.id,type:"single_choice",stem:`“${item.name}”最准确的含义是？`,options},answer:"A",explanation:explanation(item),difficulty:item.difficulty,kind:"basic"}; }
-function sceneQuestion(item: IdiomContent,levelId:string,prefix="scene"):SecretQuestion { return {id:`${prefix}-${item.id}`,levelId,knowledgeId:item.id,public:{questionId:`${prefix}-${item.id}`,knowledgeId:item.id,type:"scene_judgment",stem:`判断“${item.name}”使用是否恰当`,scene:item.correctExample,options:[{id:"A",text:"恰当"},{id:"B",text:"不恰当"}]},answer:"A",explanation:explanation(item),difficulty:Math.min(5,item.difficulty+1),kind:"application"}; }
+function definitionQuestion(item: IdiomContent,index:number,levelId:string,prefix="def"):SecretQuestion { const others=[1,2,3].map(offset=>idioms[(index+offset*7)%idioms.length]!); const correctIndex=index%optionIds.length; const options=choices(item,others,correctIndex); return {id:`${prefix}-${item.id}`,levelId,knowledgeId:item.id,public:{questionId:`${prefix}-${item.id}`,knowledgeId:item.id,type:"single_choice",stem:`“${item.name}”最准确的含义是？`,options},answer:optionIds[correctIndex]!,explanation:explanation(item),difficulty:item.difficulty,kind:"basic"}; }
+function sceneQuestion(item: IdiomContent,index:number,levelId:string,prefix="scene"):SecretQuestion { const isCorrect=index%2===0; return {id:`${prefix}-${item.id}`,levelId,knowledgeId:item.id,public:{questionId:`${prefix}-${item.id}`,knowledgeId:item.id,type:"scene_judgment",stem:`判断“${item.name}”使用是否恰当`,scene:isCorrect?item.correctExample:item.wrongExample,options:[{id:"A",text:"恰当"},{id:"B",text:"不恰当"}]},answer:isCorrect?"A":"B",explanation:explanation(item),difficulty:Math.min(5,item.difficulty+1),kind:"application"}; }
 const relationIdioms=idioms.filter(item=>item.person!=="—");
 function relationQuestion(index:number,levelId:string,prefix="rel"):SecretQuestion { const selected=[0,1,2].map(offset=>relationIdioms[(index+offset)%relationIdioms.length]!); const leftItems=selected.map(item=>({id:item.id,text:item.name})); const rightItems=[...selected].reverse().map(item=>({id:`person-${item.id}`,text:item.person})); const answer=selected.map(item=>({leftId:item.id,rightId:`person-${item.id}`})); return {id:`${prefix}-${index+1}`,levelId,knowledgeId:selected[0]!.id,public:{questionId:`${prefix}-${index+1}`,knowledgeId:selected[0]!.id,type:"relation_match",stem:"把成语与对应的典故人物连接起来",leftItems,rightItems},answer,explanation:{summary:"这些成语都来自真实历史典故。",whyCorrect:selected.map(item=>`${item.name}—${item.person}`).join("；"),commonMistake:"只记成语含义，没有建立人物与事件联系。",memoryTip:"按人物—事件—成语三点成线记忆。"},difficulty:3,kind:"relation"}; }
 export const questions: SecretQuestion[] = [
   ...idioms.slice(0,10).map((item,index)=>definitionQuestion(item,index,"idiom-1")),
-  ...idioms.slice(0,10).map(item=>sceneQuestion(item,"idiom-2")),
+  ...idioms.slice(0,10).map((item,index)=>sceneQuestion(item,index,"idiom-2")),
   ...idioms.slice(10,20).map((item,index)=>definitionQuestion(item,index+10,"idiom-3","distinguish")),
   ...Array.from({length:10},(_,index)=>relationQuestion(index,"idiom-4")),
-  ...idioms.slice(10,20).map(item=>sceneQuestion(item,"idiom-5","apply")),
+  ...idioms.slice(10,20).map((item,index)=>sceneQuestion(item,index,"idiom-5","apply")),
   ...idioms.slice(20,25).map((item,index)=>definitionQuestion(item,index+20,"idiom-boss","boss-def")),
-  ...idioms.slice(20,25).map(item=>sceneQuestion(item,"idiom-boss","boss-scene")),
+  ...idioms.slice(20,25).map((item,index)=>sceneQuestion(item,index,"idiom-boss","boss-scene")),
   ...Array.from({length:5},(_,index)=>relationQuestion(index+3,"idiom-boss","boss-rel"))
 ];
 export function publicQuestion(question: SecretQuestion) { return question.public; }

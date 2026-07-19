@@ -2,7 +2,7 @@ import type { AnswerResult, Level, LevelResult, Mastery, ProgressMap, SessionSna
 import { getAccessToken } from "./auth";
 
 const base=import.meta.env.VITE_API_URL??"http://localhost:8787/api/v1";
-async function call<T>(path:string,init?:RequestInit):Promise<T>{const accessToken=getAccessToken();const response=await fetch(`${base}${path}`,{...init,headers:{"content-type":"application/json",...(accessToken?{authorization:`Bearer ${accessToken}`}:{}) ,...init?.headers}});if(!response.ok){const body=await response.json().catch(()=>null) as {error?:{message?:string}}|null;throw new Error(body?.error?.message??"远征补给线暂时中断");}return response.json() as Promise<T>;}
+async function call<T>(path:string,init?:RequestInit):Promise<T>{const accessToken=getAccessToken();const response=await fetch(`${base}${path}`,{...init,headers:{...(init?.body?{"content-type":"application/json"}:{}),...(accessToken?{authorization:`Bearer ${accessToken}`}:{}) ,...init?.headers}});if(!response.ok){const body=await response.json().catch(()=>null) as {error?:{message?:string}}|null;throw new Error(body?.error?.message??"远征补给线暂时中断");}return response.json() as Promise<T>;}
 export const api={
   worlds:()=>call<World[]>("/worlds"),
   world:(id:string)=>call<{world:World;chapters:Array<{id:string;name:string;description:string}>}>(`/worlds/${id}`),
