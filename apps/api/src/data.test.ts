@@ -6,6 +6,7 @@ describe("idiom question answer distribution",()=>{
     const answers=questionsForLevel("idiom-1").map(question=>question.answer);
     expect(new Set(answers)).toEqual(new Set(["A","B","C","D"]));
     expect(answers.filter(answer=>answer==="A").length).toBeLessThan(answers.length/2);
+    expect(answers.join("")).not.toContain("ABCD");
   });
 
   it("mixes correct and incorrect scene judgments",()=>{

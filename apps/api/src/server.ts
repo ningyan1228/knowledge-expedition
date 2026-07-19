@@ -13,6 +13,8 @@ import { consumeMergeTicket, createMergeTicket, loadPlayerGameState, registerEma
 
 const app = Fastify({ logger: { redact: ["req.headers.authorization","req.headers.cookie","req.body.token","req.body.captchaToken","req.body.answer"] } });
 const store = new MemoryLearningStore(); const payment = new MockPaymentProvider();
+app.removeContentTypeParser("application/json");
+app.addContentTypeParser("application/json",{parseAs:"string"},(_request,body,done)=>{const text=typeof body==="string"?body:body.toString("utf8");if(text==="")return done(null,{});try{return done(null,JSON.parse(text));}catch(error){return done(error as Error,undefined);}});
 await app.register(helmet); await app.register(rateLimit,{max:120,timeWindow:"1 minute"});
 await app.register(cors,{origin:(process.env.WEB_ORIGIN??"http://localhost:5173").split(",")});
 app.setErrorHandler((error,request,reply)=>{request.log.error({err:error,requestId:request.id},"request failed");const status=typeof (error as {statusCode?:unknown}).statusCode==="number"?(error as {statusCode:number}).statusCode:500;const detail=error instanceof Error?error.message:"请求失败";const message=status===401?"请先开始远征或登录账号":status===403?detail:status===429?"操作较频繁，请稍后再试":status>=500?"请求暂时无法完成，请稍后再试":detail;reply.status(status).send({error:{code:"REQUEST_FAILED",message,requestId:request.id}});});
