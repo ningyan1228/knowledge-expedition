@@ -50,7 +50,7 @@ export function WorldIslandCard({ world }: { world: ExpeditionWorld }) {
 }
 
 const levelIcons = { lesson: BookOpen, branch: Network, boss: Swords };
-export function LevelNode({ level, active }: { level: Level; active?: boolean }) { const Icon = levelIcons[level.kind]; return <Link to={level.status === "locked" ? "/store" : `/battle/${level.id}`} className={`level-node ${level.status} ${active ? "current" : ""}`}><span className="node-icon">{level.status === "locked" ? <LockKeyhole /> : <Icon />}</span><b>{level.name}</b><small>{level.summary}</small></Link>; }
+export function LevelNode({ level, active }: { level: Level; active?: boolean }) { const Icon = levelIcons[level.kind]; const content=<><span className="node-icon">{level.status === "locked" ? <LockKeyhole /> : <Icon />}</span><b>{level.name}</b><small>{level.summary}</small>{Boolean(level.stars)&&<span className="level-stars">{"★".repeat(level.stars??0)}</span>}</>; return level.status==="locked"?<div aria-disabled="true" className="level-node locked">{content}</div>:<Link to={`/battle/${level.id}`} className={`level-node ${level.status} ${active ? "current" : ""}`}>{content}</Link>; }
 
 export function ChapterPath({ levels }: { levels: Level[] }) { return <div className="chapter-path">{levels.map((level, index) => <div className="chapter-step" key={level.id}><LevelNode level={level} active={level.status === "active"} />{index < levels.length - 1 && <i className={level.status === "complete" ? "lit" : ""} />}</div>)}</div>; }
 
@@ -70,7 +70,7 @@ export function KnowledgeNode({ icon, label, items }: { icon: ReactNode; label: 
 
 export function KnowledgeDetailPanel() { return <aside className="knowledge-detail"><p className="paper-kicker">历史事件</p><h2>赤壁之战</h2><dl><div><dt>时间</dt><dd>公元 208 年</dd></div><div><dt>参战方</dt><dd>曹操 vs 孙刘联军</dd></div><div><dt>结果</dt><dd>孙刘联军胜利</dd></div></dl><p>东汉末年的关键战役，奠定三国鼎立局面。将人物、地点和典故一起记忆，更容易建立稳定知识网络。</p><h3>相关知识</h3><ul><li>官渡之战</li><li>三国鼎立</li><li>周瑜</li><li>赤壁赋</li></ul><Link className="button primary" to="/battle/idiom-2">去学习这个知识点</Link></aside>; }
 
-export function EmptyState({ title, body }: { title: string; body: string }) { return <div className="empty-state"><Compass /><h2>{title}</h2><p>{body}</p></div>; }
+export function EmptyState({ title, body, description }: { title: string; body?: string; description?: string }) { return <div className="empty-state"><Compass /><h2>{title}</h2><p>{body ?? description}</p></div>; }
 export function LoadingSkeleton() { return <div className="loading-skeleton"><i /><i /><i /></div>; }
-export function ErrorState({ body }: { body: string }) { return <div className="error-state"><ShieldCheck /><p>{body}</p></div>; }
+export function ErrorState({ body, title, description }: { body?: string; title?: string; description?: string }) { return <div className="error-state"><ShieldCheck /><p>{body ?? [title, description].filter(Boolean).join("：")}</p></div>; }
 export { Flag, Medal, Trophy, Sparkles, Brain, BookOpen, Check, Compass };

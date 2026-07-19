@@ -51,3 +51,25 @@ Supabase 设置步骤：启用 Anonymous Sign-Ins、Email OTP 和 Manual Identit
 GitHub Pages 使用 Repository Variables（不是 Secret）提供 `VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY`、`VITE_TURNSTILE_SITE_KEY`；腾讯云 API 的 `.env` 使用 `SUPABASE_URL`、`SUPABASE_SERVICE_ROLE_KEY`、`TURNSTILE_SECRET_KEY`、`AUTH_EMAIL_COOLDOWN_SECONDS=60`、`AUTH_EMAIL_MAX_PER_15_MIN=3`、`AUTH_EMAIL_MAX_PER_IP_HOUR=8`。Turnstile 的 secret、Resend API Key、Service Role Key 仅放服务器 `.env`。未填写 Supabase 变量时，前端会使用开发 Mock Adapter，便于实现与视觉测试；这不是正式账号服务。
 
 若游客输入的是已存在邮箱，应先通过“继续上次远征”登录原账号，再使用一次性合并凭证合并进度。合并只取更高关卡成绩/掌握度并去重错题，不直接累加金币、经验、订单或权益。
+
+## 成语初章垂直切片
+
+“文化万象 → 成语初章”提供 25 个知识点、5 个普通关和 1 个 Boss，共 65 道题。内容以《十年真题成语频率排名》的高频语义分组为主，并补充可用于人物、事件、朝代关系训练的典故成语。
+
+支持 `single_choice`、`scene_judgment`、`relation_match` 三种题型。正确答案不会随题目下发；判题、掌握度、星级、经验、金币、解锁、错题去重和复习时间均由 API 计算。线上用户状态保存在 `player_game_state`，进行中的 Session 可以恢复。
+
+主要接口：
+
+```text
+GET  /api/v1/chapters/idiom-foundation
+POST /api/v1/learning-sessions
+GET  /api/v1/learning-sessions/:sessionId
+POST /api/v1/learning-sessions/:sessionId/answers
+POST /api/v1/learning-sessions/:sessionId/complete
+GET  /api/v1/wrong-questions
+GET  /api/v1/reviews/today
+```
+
+内容后台目前使用 Mock Content Adapter，并提供同步、查询、发布和发布历史接口。配置 `ADMIN_USER_IDS` 后仅指定永久账号可调用；没有 Notion 密钥不会阻断开发。
+
+数据库按顺序执行 `001_initial.sql`、`002_auth_and_account_linking.sql`、`003_idiom_vertical_slice.sql`。第三份迁移启用新增表 RLS，并为答题、奖励和有效复习计划添加幂等约束。

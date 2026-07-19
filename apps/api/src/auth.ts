@@ -90,3 +90,16 @@ export async function saveSupabaseMastery(userId: string | null, input: { knowle
   const correctCount = (existing?.correct_count ?? 0) + (input.correct ? 1 : 0); const wrongCount = (existing?.wrong_count ?? 0) + (input.correct ? 0 : 1);
   await supabaseAdmin.from("knowledge_mastery").upsert({ user_id: userId, knowledge_id: input.knowledgeId, mastery_score: Math.max(existing?.mastery_score ?? 0, input.score), correct_count: correctCount, wrong_count: wrongCount, streak_correct: input.correct ? (existing?.streak_correct ?? 0) + 1 : 0, last_result: input.correct, last_reviewed_at: new Date().toISOString(), next_review_at: input.nextReviewAt, status: input.score >= 80 ? "mastered" : "learning", updated_at: new Date().toISOString() }, { onConflict: "user_id,knowledge_id" });
 }
+
+export async function loadPlayerGameState(userId: string) {
+  if (!supabaseAdmin) return null;
+  const { data, error } = await supabaseAdmin.from("player_game_state").select("state").eq("user_id", userId).maybeSingle();
+  if (error) throw error;
+  return data?.state as unknown ?? null;
+}
+
+export async function savePlayerGameState(userId: string, state: unknown) {
+  if (!supabaseAdmin) return;
+  const { error } = await supabaseAdmin.from("player_game_state").upsert({ user_id: userId, state, updated_at: new Date().toISOString() }, { onConflict: "user_id" });
+  if (error) throw error;
+}

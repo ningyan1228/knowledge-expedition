@@ -1,1 +1,1 @@
-{"name":"@expedition/game-engine","private":true,"version":"0.1.0","type":"module","exports":{".":"./src/index.ts"},"scripts":{"typecheck":"tsc --noEmit","build":"tsc --noEmit","test":"vitest run"},"devDependencies":{"typescript":"^5.7.3","vitest":"^3.0.7"}}
+{"name":"@expedition/game-engine","private":true,"version":"0.1.0","type":"module","exports":{".":"./src/index.ts"},"scripts":{"typecheck":"tsc --noEmit","build":"tsc --noEmit","test":"vitest run"},"dependencies":{"@expedition/shared":"workspace:*"},"devDependencies":{"typescript":"^5.7.3","vitest":"^3.0.7"}}

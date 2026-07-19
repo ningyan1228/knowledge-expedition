@@ -1,4 +1,4 @@
-import type { Level, World } from "@expedition/shared";
+import type { World } from "@expedition/shared";
 
 export type WorldVisual = "history" | "culture" | "poetry" | "civilization" | "nature" | "numbers";
 
@@ -17,15 +17,6 @@ export const expeditionWorlds: ExpeditionWorld[] = [
   { id: "civilization", name: "世界文明", subtitle: "看见城邦、帝国与世界的交汇", theme: "history", visual: "civilization", chapterLabel: "章节 0 / 55", stars: "0 / 165", landmark: "遗迹与城邦", progress: 0, free: false, locked: true },
   { id: "nature", name: "科技自然馆", subtitle: "探索自然规律与科学方法", theme: "numbers", visual: "nature", chapterLabel: "章节 0 / 50", stars: "0 / 150", landmark: "天文台与植物", progress: 0, free: false, locked: true },
   { id: "numbers", name: "数字工坊", subtitle: "把公式锻造成快速判断力", theme: "numbers", visual: "numbers", chapterLabel: "章节 4 / 40", stars: "18 / 120", landmark: "算盘与数据塔", progress: 15, free: true },
-];
-
-export const mockChapterLevels: Level[] = [
-  { id: "scout", worldId: "culture", name: "侦察关", kind: "lesson", status: "complete", x: 5, summary: "卷轴侦察：看见关键信息" },
-  { id: "idiom-2", worldId: "culture", name: "基础关", kind: "lesson", status: "active", x: 23, summary: "基本释义与使用场景" },
-  { id: "analysis", worldId: "culture", name: "辨析关", kind: "lesson", status: "open", x: 41, summary: "相近表达的细微差别" },
-  { id: "relation", worldId: "culture", name: "关系关", kind: "branch", status: "locked", x: 59, summary: "人物、典故与时代关联" },
-  { id: "application", worldId: "culture", name: "应用关", kind: "lesson", status: "locked", x: 77, summary: "在真实语境中判断" },
-  { id: "boss-culture", worldId: "culture", name: "文脉守关人", kind: "boss", status: "locked", x: 95, summary: "综合挑战：典故与场景" },
 ];
 
 export const leaderboard = [

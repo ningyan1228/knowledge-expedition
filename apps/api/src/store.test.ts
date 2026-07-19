@@ -1,0 +1,7 @@
+import {describe,expect,it} from "vitest";
+import {MemoryLearningStore} from "./store.js";
+
+describe("learning store",()=>{
+  it("deduplicates attempts and wrong questions",()=>{const store=new MemoryLearningStore();const session=store.createSession("u1","idiom-1");const attempt={questionId:"q1",knowledgeId:"k1",answer:"B",isCorrect:false,timeSpentMs:1000,usedHint:false,masteryDelta:-5,createdAt:new Date().toISOString()};expect(store.saveAttempt(session,attempt).duplicate).toBe(false);expect(store.saveAttempt(session,attempt).duplicate).toBe(true);store.updateLearning("u1",{questionId:"q1",knowledgeId:"k1",knowledgeName:"测试成语",correct:false,answer:"B",delta:-5,nextReviewAt:new Date().toISOString()});store.updateLearning("u1",{questionId:"q1",knowledgeId:"k1",knowledgeName:"测试成语",correct:false,answer:"B",delta:-5,nextReviewAt:new Date().toISOString()});expect(store.getWrongs("u1")).toHaveLength(1);expect(store.getWrongs("u1")[0]?.wrongCount).toBe(2)});
+  it("does not grant a completed session twice",()=>{const store=new MemoryLearningStore();const session=store.createSession("u2","idiom-1");const result={sessionId:session.id,levelId:"idiom-1",levelName:"侦察关",correctRate:100,score:100,stars:3,xp:90,coins:30,masteryGain:80,wrongCount:0,weakKnowledge:[],nextLevelId:"idiom-2",rewardGranted:true};store.complete(session,result);store.complete(session,{...result,xp:999});expect(store.getProgress("u2").xp).toBe(90)});
+});
