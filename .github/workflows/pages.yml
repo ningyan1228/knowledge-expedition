@@ -18,6 +18,9 @@ jobs:
       - run: pnpm --filter @expedition/web build
         env:
           VITE_API_URL: https://knowledge-expedition-api.gjsx.uno/api/v1
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+          VITE_TURNSTILE_SITE_KEY: ${{ vars.VITE_TURNSTILE_SITE_KEY }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with: {path: apps/web/dist}

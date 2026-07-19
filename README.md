@@ -39,3 +39,15 @@ pnpm build
 主要体验路径：`/camp` 营地 → `/map` 六世界地图 → `/world/:id` 章节路线 → `/battle/:levelId` 答题与解析 → `/result/:sessionId` 结算；复习、图谱、个人中心、商城和排行榜继续使用既有路由与 API/本地状态，不改变服务器接口。
 
 UI 使用 CSS 变量统一颜色、间距与圆角，并在 760px 以下切换为移动导航、纵向章节路线和单列答题布局；同时支持 `prefers-reduced-motion`。
+
+## 登录与账号绑定（免费方案）
+
+默认体验是“游客先玩”：点击“开始我的远征”会创建 Supabase Anonymous Auth 身份；游客可以学习、答题和看解析。完成首个 Boss 后才会出现“保存远征进度”提示，用户可以暂时跳过。绑定邮箱使用 6 位 OTP，绑定成功后保留原来的 `auth.users.id`，因此学习进度不需要复制。
+
+开发阶段可使用 Supabase 内置邮件做少量调试；正式上线时在 Supabase Authentication 的 SMTP Settings 填写 Resend Free Custom SMTP：主机 `smtp.resend.com`、端口 `465`、用户名 `resend`、密码为 Resend API Key、发件人为 `知识远征 <login@auth.101921.xyz>`。先在 Resend 验证 `auth.101921.xyz`，并按 Resend 控制台提供的 SPF/DKIM 记录配置 DNS；不要把 API Key、Service Role Key 或 SMTP 密码提交到 GitHub。正式发布前请在 Resend 官方价格页复核当前免费额度和日发送限制；本项目不会接短信、不会自动升级套餐、不会因额度耗尽切换付费服务。
+
+Supabase 设置步骤：启用 Anonymous Sign-Ins、Email OTP 和 Manual Identity Linking；将验证码邮件模板改为 6 位 `{{ .Token }}`；在 URL Configuration 中仅添加 `https://expedition.101921.xyz` 与本地开发地址。运行 `supabase/migrations/001_initial.sql` 后再运行 `supabase/migrations/002_auth_and_account_linking.sql`。
+
+GitHub Pages 使用 Repository Variables（不是 Secret）提供 `VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY`、`VITE_TURNSTILE_SITE_KEY`；腾讯云 API 的 `.env` 使用 `SUPABASE_URL`、`SUPABASE_SERVICE_ROLE_KEY`、`TURNSTILE_SECRET_KEY`、`AUTH_EMAIL_COOLDOWN_SECONDS=60`、`AUTH_EMAIL_MAX_PER_15_MIN=3`、`AUTH_EMAIL_MAX_PER_IP_HOUR=8`。Turnstile 的 secret、Resend API Key、Service Role Key 仅放服务器 `.env`。未填写 Supabase 变量时，前端会使用开发 Mock Adapter，便于实现与视觉测试；这不是正式账号服务。
+
+若游客输入的是已存在邮箱，应先通过“继续上次远征”登录原账号，再使用一次性合并凭证合并进度。合并只取更高关卡成绩/掌握度并去重错题，不直接累加金币、经验、订单或权益。
