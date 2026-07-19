@@ -121,7 +121,8 @@ export const useAuth = create<AuthState>((set, get) => ({
     await emailPreflight(email, "login", get().session, captchaToken);
     if (!supabase) { set({ pendingEmail: email }); return; }
     if (import.meta.env.PROD && (!turnstileSiteKey || !captchaToken)) throw new Error("请先完成安全验证");
-    const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: false, ...(captchaToken ? { captchaToken } : {}) } });
+    // 首次输入的新邮箱也应创建正式账户；游客账号可在后续完成绑定。
+    const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true, ...(captchaToken ? { captchaToken } : {}) } });
     if (error) throw friendlyError(error); set({ pendingEmail: email });
   },
   verifyLoginEmail: async (email, token) => {
