@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>正在打开知识远征…</title>
+    <script>
+      (() => {
+        const route = window.location.pathname;
+        const query = window.location.search;
+        window.location.replace(
+          `${window.location.origin}/?__route=${encodeURIComponent(route)}&__query=${encodeURIComponent(query.slice(1))}${window.location.hash}`,
+        );
+      })();
+    </script>
+  </head>
+  <body>正在打开知识远征…</body>
+</html>
