@@ -9,7 +9,7 @@ export interface IdiomContent {
 
 type IdiomSeed = Pick<IdiomContent, "id" | "name" | "pinyin" | "meaning" | "category" | "frequency"> & Partial<IdiomContent>;
 function idiom(seed: IdiomSeed): IdiomContent {
-  return { sentiment: "中性", appliesTo: "事物、行为或表达", correctScene: `用于准确表达“${seed.meaning}”的语境`, wrongScene: "与核心语义或适用对象不符的语境", commonMistake: "只凭字面理解，忽略语义对象和感情色彩", synonyms: [], antonyms: [], source: "《十年真题成语频率排名》及公开辞书复核", person: "—", event: "—", dynasty: "—", correctExample: `这句话使用“${seed.name}”准确概括了材料的核心特征。`, wrongExample: `他第一个获得冠军，真是“${seed.name}”。`, memoryTip: `记住关键词：${seed.meaning.slice(0, 12)}`, difficulty: 2, reviewStatus: "approved", version: 1, ...seed };
+  return { sentiment: "中性", appliesTo: "事物、行为或表达", correctScene: `用于准确表达“${seed.meaning}”的语境`, wrongScene: "与核心语义或适用对象不符的语境", commonMistake: "只凭字面理解，忽略语义对象和感情色彩", synonyms: [], antonyms: [], source: "《十年真题成语频率排名》及公开辞书复核", person: "—", event: "—", dynasty: "—", correctExample: `这句话使用“${seed.name}”准确概括了材料的核心特征。`, wrongExample: `他第一个获得冠军，真是“${seed.name}”。`, memoryTip: `把“${seed.name}”记成：${seed.meaning}。`, difficulty: 2, reviewStatus: "approved", version: 1, ...seed };
 }
 
 export const idioms: IdiomContent[] = [
