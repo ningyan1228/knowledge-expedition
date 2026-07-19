@@ -1,0 +1,2 @@
+import {defineConfig} from "vite"; import react from "@vitejs/plugin-react"; import {VitePWA} from "vite-plugin-pwa";
+export default defineConfig({base:process.env.GITHUB_ACTIONS?"/knowledge-expedition/":"/",plugins:[react(),VitePWA({registerType:"autoUpdate",manifest:{name:"知识远征",short_name:"知识远征",description:"把零散知识，走成一张自己的地图。",theme_color:"#2E5B4F",background_color:"#F5F1E8",display:"standalone",icons:[{src:"icon.svg",sizes:"any",type:"image/svg+xml"}]},workbox:{navigateFallback:"index.html",runtimeCaching:[]}})]});

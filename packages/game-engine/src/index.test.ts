@@ -1,0 +1,2 @@
+import {describe,expect,it} from "vitest"; import {masteryDelta,nextReview} from "./index";
+describe("learning engine",()=>{it("penalizes wrong answers",()=>expect(masteryDelta({correct:false,difficulty:3,usedHint:false,kind:"basic",streak:0})).toBe(-5));it("rewards durable application",()=>expect(masteryDelta({correct:true,difficulty:3,usedHint:false,kind:"application",streak:2})).toBe(19));it("schedules failed recall in ten minutes",()=>expect(nextReview(new Date("2026-01-01T00:00:00Z"),"again",20).toISOString()).toBe("2026-01-01T00:10:00.000Z"))});

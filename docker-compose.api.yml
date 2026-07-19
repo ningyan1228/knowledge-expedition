@@ -1,0 +1,23 @@
+services:
+  knowledge-expedition-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: knowledge-expedition-api
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      VIRTUAL_HOST: knowledge-expedition-api.gjsx.uno
+      LETSENCRYPT_HOST: knowledge-expedition-api.gjsx.uno
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+      API_PORT: 8787
+      WEB_ORIGIN: ${WEB_ORIGIN}
+    expose:
+      - "8787"
+    networks:
+      - web
+
+networks:
+  web:
+    external: true

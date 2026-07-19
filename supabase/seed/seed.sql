@@ -1,0 +1,2 @@
+insert into public.worlds(id,name,slug,description,theme,free_chapter_count,published) values ('culture','文化万象','culture','从成语与典故走入千年文脉','culture',1,true),('history','华夏纪年','history','沿时间长河重建人物与事件','history',1,true),('numbers','数字工坊','numbers','把公式锻造成快速判断力','numbers',1,true);
+insert into public.products(id,name,description,price_cents,entitlement_code) values ('history-full','华夏纪年完整区','完整章节、Boss 与掌握报告',1990,'world.history');
