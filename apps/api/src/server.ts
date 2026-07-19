@@ -18,8 +18,19 @@ await app.register(cors,{origin:(process.env.WEB_ORIGIN??"http://localhost:5173"
 app.setErrorHandler((error,request,reply)=>{request.log.error({err:error,requestId:request.id},"request failed");const status=typeof (error as {statusCode?:unknown}).statusCode==="number"?(error as {statusCode:number}).statusCode:500;const detail=error instanceof Error?error.message:"请求失败";const message=status===401?"请先开始远征或登录账号":status===403?detail:status===429?"操作较频繁，请稍后再试":status>=500?"请求暂时无法完成，请稍后再试":detail;reply.status(status).send({error:{code:"REQUEST_FAILED",message,requestId:request.id}});});
 function fail(message:string,statusCode:number):never{const error=new Error(message) as Error&{statusCode:number};error.statusCode=statusCode;throw error;}
 const hydratedPlayers=new Set<string>();
-async function playerId(request:FastifyRequest){const userId=!process.env.SUPABASE_URL?"development-player":(await requireAuth(request)).userId;if(!hydratedPlayers.has(userId)){store.importUser(userId,await loadPlayerGameState(userId));hydratedPlayers.add(userId);}return userId;}
-async function persistPlayer(userId:string){await savePlayerGameState(userId,store.exportUser(userId));}
+async function playerId(request:FastifyRequest){
+  const userId=!process.env.SUPABASE_URL?"development-player":(await requireAuth(request)).userId;
+  if(!hydratedPlayers.has(userId)){
+    try{store.importUser(userId,await loadPlayerGameState(userId));}
+    catch(error){request.log.warn({err:error,userId},"player state hydration unavailable; continuing with memory store");}
+    hydratedPlayers.add(userId);
+  }
+  return userId;
+}
+async function persistPlayer(userId:string){
+  try{await savePlayerGameState(userId,store.exportUser(userId));}
+  catch(error){app.log.warn({err:error,userId},"player state persistence unavailable; continuing with memory store");}
+}
 const contentSyncs=new Map<string,{id:string;status:"completed";adapter:"mock"|"notion";knowledgeCount:number;questionCount:number;failed:number;warnings:number;version:string;contentHash:string;createdAt:string}>();
 const contentReleases:Array<{id:string;version:string;contentHash:string;createdAt:string}>=[];
 async function requireAdmin(request:FastifyRequest){if(!process.env.SUPABASE_URL)return {userId:"development-admin"};const user=await requirePermanentUser(request);const admins=(process.env.ADMIN_USER_IDS??"").split(",").map(value=>value.trim()).filter(Boolean);if(!admins.includes(user.userId))fail("需要内容管理员权限",403);return user;}
