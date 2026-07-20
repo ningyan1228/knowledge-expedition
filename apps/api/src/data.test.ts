@@ -1,6 +1,7 @@
 import {describe,expect,it} from "vitest";
 import {chapters,idioms,questionsForLevel} from "./data.js";
 import {commonSenseItems,commonSenseQuestions} from "./common-sense.js";
+import {historyItems,historyQuestions} from "./history.js";
 
 describe("idiom question answer distribution",()=>{
   it("distributes single-choice answers across A-D",()=>{
@@ -28,5 +29,14 @@ describe("idiom question answer distribution",()=>{
     expect(chapters.find(chapter=>chapter.id==="common-sense-foundation")?.questionCount).toBe(100);
     expect(new Set(commonSenseItems.map(item=>item.category))).toEqual(new Set(["法律","历史文化","科技生活","地理国情"]));
     expect(new Set(commonSenseQuestions.map(question=>question.answer))).toEqual(new Set(["A","B","C","D"]));
+  });
+
+  it("keeps 华夏纪年 as a separate, playable history chapter",()=>{
+    expect(historyItems).toHaveLength(60);
+    expect(historyQuestions).toHaveLength(60);
+    expect(chapters.find(chapter=>chapter.id==="history-timeline")?.questionCount).toBe(60);
+    expect(new Set(historyQuestions.map(question=>question.levelId))).toEqual(new Set(["history-1","history-2","history-3","history-4","history-5","history-boss"]));
+    expect(new Set(historyQuestions.map(question=>question.answer))).toEqual(new Set(["A","B","C","D"]));
+    expect(historyQuestions.map(question=>question.id).some(id=>id.startsWith("common-"))).toBe(false);
   });
 });
