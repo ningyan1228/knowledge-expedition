@@ -1,6 +1,5 @@
 import type { AnswerExplanation, Level, PublicQuestion, SubmittedAnswer, World } from "@expedition/shared";
 import { commonSenseItems, commonSenseQuestions } from "./common-sense.js";
-import { historyItems, historyQuestions } from "./history.js";
 
 export interface IdiomContent {
   id: string; name: string; pinyin: string; meaning: string; sentiment: string; appliesTo: string;
@@ -45,13 +44,12 @@ export const idioms: IdiomContent[] = [
 export const worlds: World[] = [
   { id:"culture",name:"文化万象",subtitle:"从公考高频成语走入千年文脉",theme:"culture",progress:0,free:true },
   { id:"common",name:"公考常识",subtitle:"用稳定知识点建立常识判断底盘",theme:"culture",progress:0,free:true },
-  { id:"history",name:"华夏纪年",subtitle:"沿时间长河，重建人物与事件",theme:"history",progress:0,free:true },
+  { id:"history",name:"华夏纪年",subtitle:"沿时间长河，重建人物与事件",theme:"history",progress:0,free:false },
   { id:"numbers",name:"数字工坊",subtitle:"把公式锻造成快速判断力",theme:"numbers",progress:0,free:false }
 ];
 export const chapters=[
   {id:"idiom-foundation",worldId:"culture",name:"成语初章",description:"25 个核心成语 · 65 道原创训练题",knowledgeCount:idioms.length,questionCount:65,intro:"五星高频语义组负责公考辨析，历史典故负责人物与事件关系。",bossName:"成语试炼",bossDescription:"完成前五关后，解锁 15 道综合挑战。"},
-  {id:"common-sense-foundation",worldId:"common",name:"常识初章",description:"法律、历史文化、科技生活、地理国情 · 100 道原创题",knowledgeCount:commonSenseItems.length,questionCount:commonSenseQuestions.length,intro:"从现行法律、稳定历史文化和基础科学地理中建立公考常识判断框架。",bossName:"常识综合试炼",bossDescription:"完成前五关后，解锁 25 道跨领域综合挑战。"},
-  {id:"history-timeline",worldId:"history",name:"华夏纪年 · 时间线初章",description:"先秦至新中国 · 60 道原创历史训练题",knowledgeCount:historyItems.length,questionCount:historyQuestions.length,intro:"按朝代、制度、人物与事件建立时间坐标；每一道题只属于华夏纪年，不与成语或常识题库复用。",bossName:"纪年综合试炼",bossDescription:"完成前五关后，解锁 10 道跨时代综合挑战。"}
+  {id:"common-sense-foundation",worldId:"common",name:"常识初章",description:"法律、历史文化、科技生活、地理国情 · 100 道原创题",knowledgeCount:commonSenseItems.length,questionCount:commonSenseQuestions.length,intro:"从现行法律、稳定历史文化和基础科学地理中建立公考常识判断框架。",bossName:"常识综合试炼",bossDescription:"完成前五关后，解锁 25 道跨领域综合挑战。"}
 ] as const;
 export const levels: Level[] = [
   { id:"idiom-1",worldId:"culture",chapterId:"idiom-foundation",name:"1-1 侦察关",kind:"lesson",status:"active",sort:1,questionCount:10,passScore:60,summary:"认识高频成语与基本释义" },
@@ -65,13 +63,7 @@ export const levels: Level[] = [
   { id:"common-3",worldId:"common",chapterId:"common-sense-foundation",name:"1-3 科学观察",kind:"lesson",status:"locked",sort:3,questionCount:15,passScore:60,summary:"掌握物理、化学、生物与安全生活常识" },
   { id:"common-4",worldId:"common",chapterId:"common-sense-foundation",name:"1-4 山河国情",kind:"lesson",status:"locked",sort:4,questionCount:15,passScore:60,summary:"建立中国地理、行政区与自然环境坐标" },
   { id:"common-5",worldId:"common",chapterId:"common-sense-foundation",name:"1-5 融会贯通",kind:"lesson",status:"locked",sort:5,questionCount:15,passScore:60,summary:"在跨学科干扰项中辨别准确表述" },
-  { id:"common-boss",worldId:"common",chapterId:"common-sense-foundation",name:"1-6 Boss · 常识综合试炼",kind:"boss",status:"locked",sort:6,questionCount:25,passScore:60,summary:"法律、历史、科技、国情综合挑战" },
-  { id:"history-1",worldId:"history",chapterId:"history-timeline",name:"1-1 先秦秦汉",kind:"lesson",status:"active",sort:1,questionCount:10,passScore:60,summary:"从西周制度到汉武帝，建立早期王朝坐标" },
-  { id:"history-2",worldId:"history",chapterId:"history-timeline",name:"1-2 魏晋隋唐",kind:"lesson",status:"locked",sort:2,questionCount:10,passScore:60,summary:"识别分裂、统一与制度演进" },
-  { id:"history-3",worldId:"history",chapterId:"history-timeline",name:"1-3 宋元新局",kind:"lesson",status:"locked",sort:3,questionCount:10,passScore:60,summary:"梳理宋元政权、改革与制度" },
-  { id:"history-4",worldId:"history",chapterId:"history-timeline",name:"1-4 明清经纬",kind:"lesson",status:"locked",sort:4,questionCount:10,passScore:60,summary:"连接明清人物、海洋交往与统一进程" },
-  { id:"history-5",worldId:"history",chapterId:"history-timeline",name:"1-5 近代转型",kind:"lesson",status:"locked",sort:5,questionCount:10,passScore:60,summary:"把握近代民族危机与救亡图存探索" },
-  { id:"history-boss",worldId:"history",chapterId:"history-timeline",name:"1-6 Boss · 革命与新中国",kind:"boss",status:"locked",sort:6,questionCount:10,passScore:60,summary:"在革命时间线中完成综合辨析" }
+  { id:"common-boss",worldId:"common",chapterId:"common-sense-foundation",name:"1-6 Boss · 常识综合试炼",kind:"boss",status:"locked",sort:6,questionCount:25,passScore:60,summary:"法律、历史、科技、国情综合挑战" }
 ];
 
 export type SecretQuestion = { id:string; levelId:string; knowledgeId:string; public:PublicQuestion; answer:SubmittedAnswer; explanation:AnswerExplanation; difficulty:number; kind:"basic"|"relation"|"application" };
@@ -102,9 +94,8 @@ export const questions: SecretQuestion[] = [
   ...idioms.slice(20,25).map((item,index)=>definitionQuestion(item,index+20,"idiom-boss","boss-def")),
   ...idioms.slice(20,25).map((item,index)=>sceneQuestion(item,index,"idiom-boss","boss-scene")),
   ...Array.from({length:5},(_,index)=>relationQuestion(index+3,"idiom-boss","boss-rel")),
-  ...commonSenseQuestions,
-  ...historyQuestions
+  ...commonSenseQuestions
 ];
-export const knowledgeItems=[...idioms.map(item=>({id:item.id,name:item.name,category:item.category})),...commonSenseItems.map(item=>({id:item.id,name:item.name,category:item.category})),...historyItems.map(item=>({id:item.id,name:item.name,category:item.category}))];
+export const knowledgeItems=[...idioms.map(item=>({id:item.id,name:item.name,category:item.category})),...commonSenseItems.map(item=>({id:item.id,name:item.name,category:item.category}))];
 export function publicQuestion(question: SecretQuestion) { return question.public; }
 export function questionsForLevel(levelId:string) { return questions.filter(question=>question.levelId===levelId); }
