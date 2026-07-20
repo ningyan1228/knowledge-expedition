@@ -1,4 +1,5 @@
 import type { AnswerExplanation, Level, PublicQuestion, SubmittedAnswer, World } from "@expedition/shared";
+import { commonSenseItems, commonSenseQuestions } from "./common-sense.js";
 
 export interface IdiomContent {
   id: string; name: string; pinyin: string; meaning: string; sentiment: string; appliesTo: string;
@@ -42,16 +43,27 @@ export const idioms: IdiomContent[] = [
 
 export const worlds: World[] = [
   { id:"culture",name:"文化万象",subtitle:"从公考高频成语走入千年文脉",theme:"culture",progress:0,free:true },
+  { id:"common",name:"公考常识",subtitle:"用稳定知识点建立常识判断底盘",theme:"culture",progress:0,free:true },
   { id:"history",name:"华夏纪年",subtitle:"沿时间长河，重建人物与事件",theme:"history",progress:0,free:false },
   { id:"numbers",name:"数字工坊",subtitle:"把公式锻造成快速判断力",theme:"numbers",progress:0,free:false }
 ];
+export const chapters=[
+  {id:"idiom-foundation",worldId:"culture",name:"成语初章",description:"25 个核心成语 · 65 道原创训练题",knowledgeCount:idioms.length,questionCount:65,intro:"五星高频语义组负责公考辨析，历史典故负责人物与事件关系。",bossName:"成语试炼",bossDescription:"完成前五关后，解锁 15 道综合挑战。"},
+  {id:"common-sense-foundation",worldId:"common",name:"常识初章",description:"法律、历史文化、科技生活、地理国情 · 100 道原创题",knowledgeCount:commonSenseItems.length,questionCount:commonSenseQuestions.length,intro:"从现行法律、稳定历史文化和基础科学地理中建立公考常识判断框架。",bossName:"常识综合试炼",bossDescription:"完成前五关后，解锁 25 道跨领域综合挑战。"}
+] as const;
 export const levels: Level[] = [
   { id:"idiom-1",worldId:"culture",chapterId:"idiom-foundation",name:"1-1 侦察关",kind:"lesson",status:"active",sort:1,questionCount:10,passScore:60,summary:"认识高频成语与基本释义" },
   { id:"idiom-2",worldId:"culture",chapterId:"idiom-foundation",name:"1-2 基础关",kind:"lesson",status:"locked",sort:2,questionCount:10,passScore:60,summary:"判断成语的正确使用场景" },
   { id:"idiom-3",worldId:"culture",chapterId:"idiom-foundation",name:"1-3 辨析关",kind:"lesson",status:"locked",sort:3,questionCount:10,passScore:60,summary:"识别近义、反义与易错含义" },
   { id:"idiom-4",worldId:"culture",chapterId:"idiom-foundation",name:"1-4 关系关",kind:"lesson",status:"locked",sort:4,questionCount:10,passScore:60,summary:"连接成语、人物、事件与朝代" },
   { id:"idiom-5",worldId:"culture",chapterId:"idiom-foundation",name:"1-5 应用关",kind:"lesson",status:"locked",sort:5,questionCount:10,passScore:60,summary:"在公考与工作语境中准确使用" },
-  { id:"idiom-boss",worldId:"culture",chapterId:"idiom-foundation",name:"1-6 Boss · 成语试炼",kind:"boss",status:"locked",sort:6,questionCount:15,passScore:60,summary:"综合释义、语境、辨析与典故关系" }
+  { id:"idiom-boss",worldId:"culture",chapterId:"idiom-foundation",name:"1-6 Boss · 成语试炼",kind:"boss",status:"locked",sort:6,questionCount:15,passScore:60,summary:"综合释义、语境、辨析与典故关系" },
+  { id:"common-1",worldId:"common",chapterId:"common-sense-foundation",name:"1-1 法治启程",kind:"lesson",status:"active",sort:1,questionCount:15,passScore:60,summary:"从宪法、民法、劳动与行政法认识基本规则" },
+  { id:"common-2",worldId:"common",chapterId:"common-sense-foundation",name:"1-2 文脉溯源",kind:"lesson",status:"locked",sort:2,questionCount:15,passScore:60,summary:"梳理中国历史、思想与文学常识" },
+  { id:"common-3",worldId:"common",chapterId:"common-sense-foundation",name:"1-3 科学观察",kind:"lesson",status:"locked",sort:3,questionCount:15,passScore:60,summary:"掌握物理、化学、生物与安全生活常识" },
+  { id:"common-4",worldId:"common",chapterId:"common-sense-foundation",name:"1-4 山河国情",kind:"lesson",status:"locked",sort:4,questionCount:15,passScore:60,summary:"建立中国地理、行政区与自然环境坐标" },
+  { id:"common-5",worldId:"common",chapterId:"common-sense-foundation",name:"1-5 融会贯通",kind:"lesson",status:"locked",sort:5,questionCount:15,passScore:60,summary:"在跨学科干扰项中辨别准确表述" },
+  { id:"common-boss",worldId:"common",chapterId:"common-sense-foundation",name:"1-6 Boss · 常识综合试炼",kind:"boss",status:"locked",sort:6,questionCount:25,passScore:60,summary:"法律、历史、科技、国情综合挑战" }
 ];
 
 export type SecretQuestion = { id:string; levelId:string; knowledgeId:string; public:PublicQuestion; answer:SubmittedAnswer; explanation:AnswerExplanation; difficulty:number; kind:"basic"|"relation"|"application" };
@@ -81,7 +93,9 @@ export const questions: SecretQuestion[] = [
   ...idioms.slice(10,20).map((item,index)=>sceneQuestion(item,index,"idiom-5","apply")),
   ...idioms.slice(20,25).map((item,index)=>definitionQuestion(item,index+20,"idiom-boss","boss-def")),
   ...idioms.slice(20,25).map((item,index)=>sceneQuestion(item,index,"idiom-boss","boss-scene")),
-  ...Array.from({length:5},(_,index)=>relationQuestion(index+3,"idiom-boss","boss-rel"))
+  ...Array.from({length:5},(_,index)=>relationQuestion(index+3,"idiom-boss","boss-rel")),
+  ...commonSenseQuestions
 ];
+export const knowledgeItems=[...idioms.map(item=>({id:item.id,name:item.name,category:item.category})),...commonSenseItems.map(item=>({id:item.id,name:item.name,category:item.category}))];
 export function publicQuestion(question: SecretQuestion) { return question.public; }
 export function questionsForLevel(levelId:string) { return questions.filter(question=>question.levelId===levelId); }

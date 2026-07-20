@@ -1,5 +1,6 @@
 import {describe,expect,it} from "vitest";
-import {idioms,questionsForLevel} from "./data.js";
+import {chapters,idioms,questionsForLevel} from "./data.js";
+import {commonSenseItems,commonSenseQuestions} from "./common-sense.js";
 
 describe("idiom question answer distribution",()=>{
   it("distributes single-choice answers across A-D",()=>{
@@ -19,5 +20,13 @@ describe("idiom question answer distribution",()=>{
       expect(item.memoryTip).not.toBe(`记住关键词：${item.meaning.slice(0,12)}`);
       expect(item.memoryTip.length).toBeGreaterThan(8);
     }
+  });
+
+  it("ships a complete first common-sense chapter",()=>{
+    expect(commonSenseItems).toHaveLength(100);
+    expect(commonSenseQuestions).toHaveLength(100);
+    expect(chapters.find(chapter=>chapter.id==="common-sense-foundation")?.questionCount).toBe(100);
+    expect(new Set(commonSenseItems.map(item=>item.category))).toEqual(new Set(["法律","历史文化","科技生活","地理国情"]));
+    expect(new Set(commonSenseQuestions.map(question=>question.answer))).toEqual(new Set(["A","B","C","D"]));
   });
 });

@@ -1,5 +1,6 @@
 export type WorldTheme = "culture" | "history" | "numbers";
 export interface World { id: string; name: string; subtitle: string; theme: WorldTheme; progress: number; free: boolean }
+export interface Chapter { id: string; worldId: string; name: string; description: string; knowledgeCount: number; questionCount: number; intro: string; bossName: string; bossDescription: string }
 export interface Level { id: string; worldId: string; chapterId: string; name: string; kind: "lesson" | "boss"; status: "locked" | "open" | "active" | "complete"; sort: number; questionCount: number; passScore: number; summary: string; stars?: number }
 
 export type QuestionType = "single_choice" | "scene_judgment" | "relation_match";
