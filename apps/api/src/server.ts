@@ -6,7 +6,7 @@ import { z } from "zod";
 import { answerInput, startSessionInput, orderInput } from "@expedition/content-schema";
 import { answersEqual, masteryDelta, nextReview, rewardFor, starsFor } from "@expedition/game-engine";
 import type { Level, SessionSnapshot } from "@expedition/shared";
-import { chapters, idioms, knowledgeItems, levels, questions, questionsForLevel, worlds } from "./data.js";
+import { chapters, knowledgeItems, levels, questions, questionsForLevel, worlds } from "./content-catalog.js";
 import { MemoryLearningStore } from "./store.js";
 import { MockPaymentProvider } from "./payment.js";
 import { consumeMergeTicket, createMergeTicket, loadPlayerGameState, registerEmailRequest, requireAuth, requirePermanentUser, savePlayerGameState, verifyTurnstile } from "./auth.js";
@@ -39,7 +39,7 @@ async function requireAdmin(request:FastifyRequest){if(!process.env.SUPABASE_URL
 function levelState(userId:string,chapterId?:string){const progress=store.getProgress(userId);const scoped=chapterId?levels.filter(level=>level.chapterId===chapterId):levels;return scoped.map((level,index):Level=>{const saved=progress.levels.get(level.id);const previous=index===0||progress.levels.has(scoped[index-1]!.id);return {...level,status:saved?"complete":previous?"active":"locked",stars:saved?.stars??0};});}
 function snapshot(session:ReturnType<MemoryLearningStore["createSession"]>):SessionSnapshot{const level=levels.find(item=>item.id===session.levelId)!;const list=questionsForLevel(session.levelId);return {sessionId:session.id,level:{id:level.id,name:level.name,questionCount:list.length},currentIndex:session.currentIndex,currentQuestion:session.status==="active"?list[session.currentIndex]?.public??null:null,status:session.status,result:session.result};}
 
-app.get("/health",async()=>({ok:true,service:"knowledge-expedition-api",contentVersion:"common-sense-v1"}));
+app.get("/health",async()=>({ok:true,service:"knowledge-expedition-api",contentVersion:`supabase-catalog-v1-${questions.length}`}));
 app.get("/api/v1/config",async()=>({appName:"知识远征",guestEnabled:true,mockMode:!process.env.SUPABASE_URL,emailCooldownSeconds:Number(process.env.AUTH_EMAIL_COOLDOWN_SECONDS??60)}));
 app.post("/api/v1/auth/turnstile/verify",async(request,reply)=>{const body=z.object({token:z.string().min(1).optional()}).safeParse(request.body);if(!body.success)return reply.code(400).send({error:{code:"INVALID_INPUT",message:"安全验证无效",requestId:request.id}});const result=await verifyTurnstile(body.data.token,request.ip);return result.ok?result:reply.code(403).send({error:{code:"TURNSTILE_FAILED",message:"安全验证未通过，请刷新后重试",requestId:request.id}});});
 app.post("/api/v1/auth/email/request",async(request,reply)=>{const body=z.object({email:z.string().email(),eventType:z.enum(["bind","login"])}).safeParse(request.body);if(!body.success)return reply.code(400).send({error:{code:"INVALID_INPUT",message:"请输入有效的邮箱地址",requestId:request.id}});const result=await registerEmailRequest(request,body.data.email,body.data.eventType);return result.allowed?result:reply.code(429).send({error:{code:"EMAIL_LIMIT",message:"验证码发送较频繁，请稍后再试",requestId:request.id},retryAfter:result.retryAfter});});
@@ -63,12 +63,12 @@ app.get("/api/v1/mastery",async request=>store.getMastery(await playerId(request
 app.get("/api/v1/wrong-questions",async request=>store.getWrongs(await playerId(request)));
 app.get("/api/v1/reviews/today",async request=>{const rows=store.getReviews(await playerId(request));return {due:rows.filter(row=>new Date(row.dueAt)<=new Date()),upcoming:rows};});
 
-app.post("/api/v1/admin/content/sync/notion",async request=>{await requireAdmin(request);const id=crypto.randomUUID();const adapter="mock" as const;const contentHash=`idiom-v1-${idioms.length}-${questions.length}`;const row={id,status:"completed" as const,adapter,knowledgeCount:idioms.length,questionCount:questions.length,failed:0,warnings:1,version:"idiom-v1",contentHash,createdAt:new Date().toISOString()};contentSyncs.set(id,row);return row;});
+app.post("/api/v1/admin/content/sync/notion",async request=>{await requireAdmin(request);const id=crypto.randomUUID();const adapter="mock" as const;const contentHash=`supabase-catalog-${knowledgeItems.length}-${questions.length}`;const row={id,status:"completed" as const,adapter,knowledgeCount:knowledgeItems.length,questionCount:questions.length,failed:0,warnings:0,version:"supabase-catalog-v1",contentHash,createdAt:new Date().toISOString()};contentSyncs.set(id,row);return row;});
 app.get("/api/v1/admin/content/sync/:syncId",async request=>{await requireAdmin(request);const row=contentSyncs.get((request.params as {syncId:string}).syncId);if(!row)fail("同步记录不存在",404);return row;});
 app.post("/api/v1/admin/content/releases",async request=>{await requireAdmin(request);const latest=[...contentSyncs.values()].at(-1);if(!latest)fail("请先执行内容同步",409);const release={id:crypto.randomUUID(),version:latest.version,contentHash:latest.contentHash,createdAt:new Date().toISOString()};contentReleases.push(release);return release;});
 app.get("/api/v1/admin/content/releases",async request=>{await requireAdmin(request);return contentReleases;});
 
-app.get("/api/v1/knowledge/:id/relations",async request=>{const item=idioms.find(row=>row.id===(request.params as {id:string}).id);return item?{center:item.name,groups:[{label:"语义类别",items:[item.category]},{label:"典故人物",items:[item.person]},{label:"近义辨析",items:item.synonyms}]}:{center:"",groups:[]};});
+app.get("/api/v1/knowledge/:id/relations",async request=>{const item=knowledgeItems.find(row=>row.id===(request.params as {id:string}).id);return item?{center:item.name,groups:[{label:"知识类别",items:[item.category]},{label:"同类复习",items:knowledgeItems.filter(row=>row.category===item.category&&row.id!==item.id).slice(0,4).map(row=>row.name)}]}:{center:"",groups:[]};});
 app.get("/api/v1/products",async()=>[{id:"history-full",name:"华夏纪年完整包",price:19.9,entitlementCode:"world.history"}]);
 app.post("/api/v1/orders",async(request,reply)=>{await requirePermanentUser(request);const parsed=orderInput.safeParse(request.body);if(!parsed.success)return reply.code(400).send({error:{code:"INVALID_INPUT",message:"商品无效",requestId:request.id}});const orderId=crypto.randomUUID();return {orderId,...await payment.createOrder({orderId,amount:1990})};});
 
