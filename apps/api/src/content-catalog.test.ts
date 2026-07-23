@@ -27,6 +27,7 @@ describe("Supabase content catalog migration",()=>{
     expect((numbersMigration.match(/\('numbers-(?:basic|mul|data|sequence|reason|boss)-\d+/g)??[]).length).toBe(80);
     expect(numbersMigration).toContain('"type":"numeric_input"');
     expect(numbersMigration).toContain("md5(source.id || (option->>'text'))");
+    expect(numbersMigration).not.toMatch(/,6,true,1\)/);
     expect(numbersMigration).toContain("共 80 题");
   });
 });
