@@ -7,7 +7,15 @@ type Row=Record<string,unknown>;
 const url=process.env.SUPABASE_URL;
 const serviceKey=process.env.SUPABASE_SERVICE_ROLE_KEY;
 if(!url||!serviceKey)throw new Error("缺少 SUPABASE_URL 或 SUPABASE_SERVICE_ROLE_KEY；题库只能从 Supabase 读取");
-const secretKeyFetch=serviceKey.startsWith("sb_secret_")?async(input:RequestInfo|URL,init?:RequestInit)=>{const headers=new Headers(init?.headers);headers.delete("authorization");return fetch(input,{...init,headers});}:undefined;
+const secretKeyFetch=serviceKey.startsWith("sb_secret_")?async(input:RequestInfo|URL,init?:RequestInit)=>{
+  // New Supabase secret keys are authenticated through `apikey`, not a Bearer token.
+  // Keep the client's normal headers, but remove the incompatible Authorization header.
+  const headers=new Headers(input instanceof Request?input.headers:undefined);
+  new Headers(init?.headers).forEach((value,key)=>headers.set(key,value));
+  headers.delete("authorization");
+  headers.set("apikey",serviceKey);
+  return fetch(input,{...init,headers});
+}:undefined;
 const clientOptions={auth:{persistSession:false,autoRefreshToken:false},...(secretKeyFetch?{global:{fetch:secretKeyFetch}}:{})};
 const db=createClient(url,serviceKey,clientOptions);
 
