@@ -15,6 +15,8 @@ describe("Supabase content catalog migration",()=>{
   it("contains the complete initial question bank and no server-side content source",()=>{
     expect((migration.match(/insert into public\.questions/g)??[]).length).toBe(6);
     expect((migration.match(/insert into public\.knowledge_points/g)??[]).length).toBe(1);
+    expect(migration).not.toContain("values 1,1,1");
+    expect((migration.match(/,true,1\)/g)??[]).length).toBeGreaterThanOrEqual(125);
     expect(migration).toContain("'common-boss'");
     expect(migration).toContain("'idiom-boss'");
   });
