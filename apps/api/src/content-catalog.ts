@@ -7,17 +7,9 @@ type Row=Record<string,unknown>;
 const url=process.env.SUPABASE_URL;
 const serviceKey=process.env.SUPABASE_SERVICE_ROLE_KEY;
 if(!url||!serviceKey)throw new Error("缺少 SUPABASE_URL 或 SUPABASE_SERVICE_ROLE_KEY；题库只能从 Supabase 读取");
-const secretKeyFetch=serviceKey.startsWith("sb_secret_")?async(input:RequestInfo|URL,init?:RequestInit)=>{
-  // New Supabase secret keys are authenticated through `apikey`, not a Bearer token.
-  // Keep the client's normal headers, but remove the incompatible Authorization header.
-  const headers=new Headers(input instanceof Request?input.headers:undefined);
-  new Headers(init?.headers).forEach((value,key)=>headers.set(key,value));
-  headers.delete("authorization");
-  headers.set("apikey",serviceKey);
-  return fetch(input,{...init,headers});
-}:undefined;
-const clientOptions={auth:{persistSession:false,autoRefreshToken:false},...(secretKeyFetch?{global:{fetch:secretKeyFetch}}:{})};
-const db=createClient(url,serviceKey,clientOptions);
+// Supabase handles both legacy service_role JWTs and new sb_secret keys here.
+// Do not alter its request headers: the API gateway maps a secret key to its service role.
+const db=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
 
 function dataOrThrow<T>(result:{data:T|null;error:{message:string}|null},name:string):T{if(result.error)throw new Error(`读取 Supabase ${name} 失败：${result.error.message}`);if(result.data===null)throw new Error(`Supabase ${name} 没有返回数据`);return result.data;}
 function json<T>(value:unknown):T{if(typeof value==="string")return JSON.parse(value) as T;return value as T;}
