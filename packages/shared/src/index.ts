@@ -3,14 +3,15 @@ export interface World { id: string; name: string; subtitle: string; theme: Worl
 export interface Chapter { id: string; worldId: string; name: string; description: string; knowledgeCount: number; questionCount: number; intro: string; bossName: string; bossDescription: string }
 export interface Level { id: string; worldId: string; chapterId: string; name: string; kind: "lesson" | "boss"; status: "locked" | "open" | "active" | "complete"; sort: number; questionCount: number; passScore: number; summary: string; stars?: number }
 
-export type QuestionType = "single_choice" | "scene_judgment" | "relation_match";
+export type QuestionType = "single_choice" | "scene_judgment" | "relation_match" | "numeric_input";
 export interface QuestionOption { id: string; text: string }
 export interface RelationItem { id: string; text: string }
 export interface PublicQuestionBase { questionId: string; knowledgeId: string; type: QuestionType; stem: string; hint?: string }
 export interface SingleChoiceQuestion extends PublicQuestionBase { type: "single_choice"; options: QuestionOption[] }
 export interface SceneJudgmentQuestion extends PublicQuestionBase { type: "scene_judgment"; scene: string; options: QuestionOption[] }
 export interface RelationMatchQuestion extends PublicQuestionBase { type: "relation_match"; leftItems: RelationItem[]; rightItems: RelationItem[] }
-export type PublicQuestion = SingleChoiceQuestion | SceneJudgmentQuestion | RelationMatchQuestion;
+export interface NumericInputQuestion extends PublicQuestionBase { type: "numeric_input"; prompt?: string; suffix?: string; inputMode?: "numeric" | "decimal" }
+export type PublicQuestion = SingleChoiceQuestion | SceneJudgmentQuestion | RelationMatchQuestion | NumericInputQuestion;
 export type SubmittedAnswer = string | Array<{ leftId: string; rightId: string }>;
 
 export interface AnswerExplanation {

@@ -1,8 +1,35 @@
 import type { PublicQuestion, SubmittedAnswer } from "@expedition/shared";
 
-type Props={question:PublicQuestion;answer:SubmittedAnswer|undefined;disabled:boolean;onChange:(answer:SubmittedAnswer)=>void};
-export function QuestionRenderer(props:Props){switch(props.question.type){case "single_choice":return <SingleChoiceRenderer {...props} question={props.question}/>;case "scene_judgment":return <SceneJudgmentRenderer {...props} question={props.question}/>;case "relation_match":return <RelationMatchRenderer {...props} question={props.question}/>;}}
-function SingleChoiceRenderer({question,answer,disabled,onChange}:Props&{question:Extract<PublicQuestion,{type:"single_choice"}>}){return <div className="question-options">{question.options.map(option=><button type="button" disabled={disabled} className={answer===option.id?"selected":""} onClick={()=>onChange(option.id)} key={option.id}><span>{option.id}</span>{option.text}</button>)}</div>}
-function SceneJudgmentRenderer({question,answer,disabled,onChange}:Props&{question:Extract<PublicQuestion,{type:"scene_judgment"}>}){return <><blockquote className="question-scene">{question.scene}</blockquote><div className="judgment-options">{question.options.map(option=><button type="button" disabled={disabled} className={answer===option.id?"selected":""} onClick={()=>onChange(option.id)} key={option.id}>{option.text}</button>)}</div></>}
-function RelationMatchRenderer({question,answer,disabled,onChange}:Props&{question:Extract<PublicQuestion,{type:"relation_match"}>}){const pairs=Array.isArray(answer)?answer:[];function choose(leftId:string,rightId:string){onChange([...pairs.filter(item=>item.leftId!==leftId),{leftId,rightId}]);}return <div className="relation-match">{question.leftItems.map(left=><label key={left.id}><strong>{left.text}</strong><select disabled={disabled} value={pairs.find(item=>item.leftId===left.id)?.rightId??""} onChange={event=>choose(left.id,event.target.value)}><option value="">选择典故人物</option>{question.rightItems.map(right=><option value={right.id} key={right.id}>{right.text}</option>)}</select></label>)}</div>}
-export function hasCompleteAnswer(question:PublicQuestion,answer:SubmittedAnswer|undefined){return question.type==="relation_match"?Array.isArray(answer)&&answer.length===question.leftItems.length:typeof answer==="string"&&answer.length>0;}
+type Props = { question: PublicQuestion; answer: SubmittedAnswer | undefined; disabled: boolean; onChange: (answer: SubmittedAnswer) => void };
+
+export function QuestionRenderer(props: Props) {
+  switch (props.question.type) {
+    case "single_choice": return <SingleChoiceRenderer {...props} question={props.question} />;
+    case "scene_judgment": return <SceneJudgmentRenderer {...props} question={props.question} />;
+    case "relation_match": return <RelationMatchRenderer {...props} question={props.question} />;
+    case "numeric_input": return <NumericInputRenderer {...props} question={props.question} />;
+  }
+}
+
+function SingleChoiceRenderer({ question, answer, disabled, onChange }: Props & { question: Extract<PublicQuestion, { type: "single_choice" }> }) {
+  return <div className="question-options">{question.options.map(option => <button type="button" disabled={disabled} className={answer === option.id ? "selected" : ""} onClick={() => onChange(option.id)} key={option.id}><span>{option.id}</span>{option.text}</button>)}</div>;
+}
+
+function SceneJudgmentRenderer({ question, answer, disabled, onChange }: Props & { question: Extract<PublicQuestion, { type: "scene_judgment" }> }) {
+  return <><blockquote className="question-scene">{question.scene}</blockquote><div className="judgment-options">{question.options.map(option => <button type="button" disabled={disabled} className={answer === option.id ? "selected" : ""} onClick={() => onChange(option.id)} key={option.id}>{option.text}</button>)}</div></>;
+}
+
+function RelationMatchRenderer({ question, answer, disabled, onChange }: Props & { question: Extract<PublicQuestion, { type: "relation_match" }> }) {
+  const pairs = Array.isArray(answer) ? answer : [];
+  function choose(leftId: string, rightId: string) { onChange([...pairs.filter(item => item.leftId !== leftId), { leftId, rightId }]); }
+  return <div className="relation-match">{question.leftItems.map(left => <label key={left.id}><strong>{left.text}</strong><select disabled={disabled} value={pairs.find(item => item.leftId === left.id)?.rightId ?? ""} onChange={event => choose(left.id, event.target.value)}><option value="">选择对应项</option>{question.rightItems.map(right => <option value={right.id} key={right.id}>{right.text}</option>)}</select></label>)}</div>;
+}
+
+function NumericInputRenderer({ question, answer, disabled, onChange }: Props & { question: Extract<PublicQuestion, { type: "numeric_input" }> }) {
+  const value = typeof answer === "string" ? answer : "";
+  return <div className="numeric-answer"><p>{question.prompt ?? "请计算并填写答案"}</p><label><input aria-label="填写答案" disabled={disabled} inputMode={question.inputMode ?? "numeric"} value={value} onChange={event => onChange(event.target.value)} placeholder="输入答案" />{question.suffix && <span>{question.suffix}</span>}</label><small>只填写数字；若题目带百分号，请填写百分号前的数值。</small></div>;
+}
+
+export function hasCompleteAnswer(question: PublicQuestion, answer: SubmittedAnswer | undefined) {
+  return question.type === "relation_match" ? Array.isArray(answer) && answer.length === question.leftItems.length : typeof answer === "string" && answer.trim().length > 0;
+}

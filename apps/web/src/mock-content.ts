@@ -17,7 +17,7 @@ export const expeditionWorlds: ExpeditionWorld[] = [
   { id: "poetry", name: "诗词山河", subtitle: "顺着诗句，抵达山河与心境", theme: "culture", visual: "poetry", chapterLabel: "章节 4 / 48", stars: "16 / 144", landmark: "楼阁与明月", progress: 18, free: false, locked: true },
   { id: "civilization", name: "世界文明", subtitle: "看见城邦、帝国与世界的交汇", theme: "history", visual: "civilization", chapterLabel: "章节 0 / 55", stars: "0 / 165", landmark: "遗迹与城邦", progress: 0, free: false, locked: true },
   { id: "nature", name: "科技自然馆", subtitle: "探索自然规律与科学方法", theme: "numbers", visual: "nature", chapterLabel: "章节 0 / 50", stars: "0 / 150", landmark: "天文台与植物", progress: 0, free: false, locked: true },
-  { id: "numbers", name: "数字工坊", subtitle: "把公式锻造成快速判断力", theme: "numbers", visual: "numbers", chapterLabel: "数学题库筹备中", stars: "待开放", landmark: "算盘与数据塔", progress: 0, free: false, locked: true },
+  { id: "numbers", name: "数字工坊", subtitle: "把公式锻造成快速判断力", theme: "numbers", visual: "numbers", chapterLabel: "数字训练工坊", stars: "80 道训练题", landmark: "算盘与数据塔", progress: 0, free: true },
 ];
 
 export const leaderboard = [
