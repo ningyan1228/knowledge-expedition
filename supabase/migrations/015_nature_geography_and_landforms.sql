@@ -1,5 +1,9 @@
 -- 科技自然馆：地貌、中国地理与自然分界线。内容只写入 Supabase。
 
+insert into public.worlds (id,name,slug,description,theme,free_chapter_count,published,version) values
+  ('nature','科技自然馆','nature','从技术发明到自然规律，训练观察与推理','nature',1,true,1)
+on conflict (id) do update set name=excluded.name,slug=excluded.slug,description=excluded.description,theme=excluded.theme,free_chapter_count=excluded.free_chapter_count,published=excluded.published,version=excluded.version;
+
 insert into public.chapters (id,world_id,name,sort,is_free,published,version,description,intro,boss_name,boss_description) values
   ('nature-landforms','nature','山河观察站',2,true,true,1,'高原、山脉、河流与自然分界线 · 20 道训练题','让地貌、气候、河流与区域特征在地图上彼此照应。','山河坐标试炼','通过区域特征和成因，定位中国自然地理。')
 on conflict (id) do update set world_id=excluded.world_id,name=excluded.name,sort=excluded.sort,is_free=excluded.is_free,published=excluded.published,version=excluded.version,description=excluded.description,intro=excluded.intro,boss_name=excluded.boss_name,boss_description=excluded.boss_description;
@@ -29,8 +33,7 @@ insert into public.knowledge_relations (source_id,target_id,relation_type,label,
   ('nature-loess','nature-yangtze-yellow','context','黄河中游地貌',1),
   ('nature-yunnan-guizhou','nature-karst','contains','岩溶地貌',1),
   ('nature-qinling-huaihe','nature-north-south','explains','南北区域差异',1),
-  ('nature-qinling-huaihe','nature-yangtze-yellow','context','山河分界',1),
-  ('nature-four-famous-mountains','culture-festivals','context','文化地理',1)
+  ('nature-qinling-huaihe','nature-yangtze-yellow','context','山河分界',1)
 on conflict (source_id,target_id,relation_type) do update set label=excluded.label,weight=excluded.weight;
 
 with seed(id,knowledge_id,level_id,stem,a,b,c,d,answer,summary,why_correct,why_wrong,mistake,tip,difficulty) as (values

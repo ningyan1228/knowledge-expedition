@@ -30,8 +30,7 @@ insert into public.knowledge_relations (source_id,target_id,relation_type,label,
   ('history-zizhi','history-tongdian','contrast','治乱编年与制度沿革',1),
   ('history-tuien','history-hanfei','context','中央集权',1),
   ('history-guandu','history-chibi','precedes','东汉末年战局',1),
-  ('history-chibi','history-feishui','contrast','以少胜多',1),
-  ('history-tuien','history-republic-founded','context','国家治理演进',1)
+  ('history-chibi','history-feishui','contrast','以少胜多',1)
 on conflict (source_id,target_id,relation_type) do update set label=excluded.label,weight=excluded.weight;
 
 with seed(id,knowledge_id,level_id,stem,a,b,c,d,answer,summary,why_correct,why_wrong,mistake,tip,difficulty) as (values

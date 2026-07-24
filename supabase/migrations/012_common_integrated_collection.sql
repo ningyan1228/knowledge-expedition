@@ -25,12 +25,8 @@ on conflict (id) do update set name=excluded.name,summary=excluded.summary,core_
 
 insert into public.knowledge_relations (source_id,target_id,relation_type,label,weight) values
   ('common-sanguozhi','common-sanguoyanyi','contrast','正史与演义',1),
-  ('common-zhangzhongjing','nature-wuqinxi','contrast','东汉医学人物',1),
   ('common-lishizhen','common-huangdi-neijing','context','中医典籍',1),
-  ('common-historical-records','common-sanguozhi','timeline','史学传统',1),
-  ('common-chronology','culture-festivals','context','传统时间',1),
-  ('common-embroidery','culture-calligraphy','context','传统工艺',1),
-  ('common-anthem','history-republic-founded','context','国家记忆',1)
+  ('common-historical-records','common-sanguozhi','timeline','史学传统',1)
 on conflict (source_id,target_id,relation_type) do update set label=excluded.label,weight=excluded.weight;
 
 with seed(id,knowledge_id,level_id,stem,a,b,c,d,answer,summary,why_correct,why_wrong,mistake,tip,difficulty) as (values
@@ -47,13 +43,13 @@ with seed(id,knowledge_id,level_id,stem,a,b,c,d,answer,summary,why_correct,why_w
   ('common-integrated-11','common-embroidery','common-integrated-1','下列属于中国四大名绣的是？','杭绣','苏绣','汴绣','京绣','B','正确答案：苏绣','苏绣、湘绣、粤绣、蜀绣合称四大名绣。','其他绣种也有地方特色，但不在四大名绣固定组合内。','将知名地方绣种全部列入四大名绣。','苏湘粤蜀。',1),
   ('common-integrated-12','common-historical-records','common-integrated-2','《史记》的作者是？','班固','司马光','司马迁','陈寿','C','正确答案：司马迁','《史记》由司马迁撰写，开创纪传体通史体例。','班固著《汉书》，司马光主编《资治通鉴》，陈寿著《三国志》。','将史书作者只按姓氏或时代猜测。','司马迁史记。',1),
   ('common-integrated-13','common-historical-records','common-integrated-2','下列关于《史记》的表述，正确的是？','中国第一部纪传体通史','中国第一部编年体通史','三国时期断代史','章回体历史演义小说','A','正确答案：中国第一部纪传体通史','《史记》是中国第一部纪传体通史。','编年体通史代表为《资治通鉴》；其他体例也不对应《史记》。','混淆“纪传体”“通史”“断代史”三个概念。','史记：纪传体通史第一部。',3),
-  ('common-integrated-14','common-anthem','common-integrated-boss','single_choice','下列“人物—贡献”对应正确的是？','田汉—《义勇军进行曲》词作者','聂耳—《义勇军进行曲》词作者','陈寿—《三国演义》作者','华佗—《本草纲目》作者','A','正确答案：田汉—《义勇军进行曲》词作者','田汉作词、聂耳作曲；陈寿著《三国志》，《本草纲目》作者为李时珍。','多组人物都很熟悉，必须抓住具体“作品—角色”对应。','把作者、词作者、曲作者和医书作者混用。','田汉词聂耳曲；三国志陈寿；本草李时珍。',3),
-  ('common-integrated-15','common-sanguozhi','common-integrated-boss','single_choice','下列关于《三国志》与《三国演义》的比较，正确的是？','二者均为陈寿所著正史','《三国志》为正史，《三国演义》为历史演义小说','《三国演义》早于《三国志》成书','二者均为纪传体断代史','B','正确答案：《三国志》为正史，《三国演义》为历史演义小说','《三国志》是陈寿撰写的纪传体断代史；《三国演义》通常署为罗贯中，是历史演义小说。','二者均涉及三国人物，但史料性质不同。','以题材相同替代体裁与史料性质判断。','三国志是史，三国演义是小说。',3),
-  ('common-integrated-16','common-zhangzhongjing','common-integrated-boss','single_choice','下列医学人物与著作或方法的对应，错误的是？','张仲景—《伤寒杂病论》','李时珍—《本草纲目》','华佗—五禽戏','华佗—《黄帝内经》','D','正确答案：华佗—《黄帝内经》','《黄帝内经》是中医基础理论经典，不是华佗个人著作；华佗与五禽戏相关。','其余搭配均为常见且正确的医学常识。','把传统医学经典与个人成就等同。','仲景伤寒，时珍本草，华佗五禽，内经是理论经典。',3),
-  ('common-integrated-17','common-chronology','common-integrated-boss','single_choice','下列对传统纪年的理解，正确的是？','天干有十二个，地支有十个','十天干和十二地支依次相配形成干支纪年','甲子只指一个月的第一天','年号纪年与帝王统治无关','B','正确答案：十天干和十二地支依次相配形成干支纪年','十天干、十二地支相配，形成六十年一循环的干支体系。','选项颠倒天干地支数量，或误解甲子和年号纪年。','记住数字但不理解组合规则。','十干十二支，六十成甲子。',3),
-  ('common-integrated-18','common-embroidery','common-integrated-boss','single_choice','下列组合中，全部属于中国四大名绣的是？','苏绣、湘绣、粤绣、蜀绣','苏绣、杭绣、京绣、蜀绣','湘绣、汴绣、粤绣、京绣','苏绣、苗绣、粤绣、蜀绣','A','正确答案：苏绣、湘绣、粤绣、蜀绣','四大名绣固定为苏、湘、粤、蜀四种。','其余选项掺入具有地方特色但不属四大名绣的绣种。','只凭地名熟悉程度选择。','苏湘粤蜀，四大名绣。',2),
-  ('common-integrated-19','common-historical-records','common-integrated-boss','single_choice','按作者生活时代先后排列，下列顺序正确的是？','司马迁—陈寿—罗贯中','罗贯中—陈寿—司马迁','陈寿—司马迁—罗贯中','司马迁—罗贯中—陈寿','A','正确答案：司马迁—陈寿—罗贯中','司马迁为西汉史学家，陈寿为西晋史学家，罗贯中为元末明初小说家。','先按作者所处朝代定位，再比较先后。','把三国题材作品的作者都误放在同一时代。','司马迁西汉，陈寿西晋，罗贯中元末明初。',4),
-  ('common-integrated-20','common-lin-zexu','common-integrated-boss','single_choice','下列常识表述正确的是？','“苟利国家生死以”体现以国家利益为重的担当精神','《三国演义》是陈寿撰写的正史','《本草纲目》由张仲景编撰','干支纪年七十年为一甲子','A','正确答案：“苟利国家生死以”体现以国家利益为重的担当精神','该句出自林则徐作品，表达以国家利益为重的担当精神。','其余选项分别误配史书作者、医学著作作者和干支循环年数。','把多个学科的固定事实混在一题时遗漏细节。','国事林则徐，三志陈寿，本草时珍，甲子六十。',3)
+  ('common-integrated-14','common-anthem','common-integrated-boss','下列“人物—贡献”对应正确的是？','田汉—《义勇军进行曲》词作者','聂耳—《义勇军进行曲》词作者','陈寿—《三国演义》作者','华佗—《本草纲目》作者','A','正确答案：田汉—《义勇军进行曲》词作者','田汉作词、聂耳作曲；陈寿著《三国志》，《本草纲目》作者为李时珍。','多组人物都很熟悉，必须抓住具体“作品—角色”对应。','把作者、词作者、曲作者和医书作者混用。','田汉词聂耳曲；三国志陈寿；本草李时珍。',3),
+  ('common-integrated-15','common-sanguozhi','common-integrated-boss','下列关于《三国志》与《三国演义》的比较，正确的是？','二者均为陈寿所著正史','《三国志》为正史，《三国演义》为历史演义小说','《三国演义》早于《三国志》成书','二者均为纪传体断代史','B','正确答案：《三国志》为正史，《三国演义》为历史演义小说','《三国志》是陈寿撰写的纪传体断代史；《三国演义》通常署为罗贯中，是历史演义小说。','二者均涉及三国人物，但史料性质不同。','以题材相同替代体裁与史料性质判断。','三国志是史，三国演义是小说。',3),
+  ('common-integrated-16','common-zhangzhongjing','common-integrated-boss','下列医学人物与著作或方法的对应，错误的是？','张仲景—《伤寒杂病论》','李时珍—《本草纲目》','华佗—五禽戏','华佗—《黄帝内经》','D','正确答案：华佗—《黄帝内经》','《黄帝内经》是中医基础理论经典，不是华佗个人著作；华佗与五禽戏相关。','其余搭配均为常见且正确的医学常识。','把传统医学经典与个人成就等同。','仲景伤寒，时珍本草，华佗五禽，内经是理论经典。',3),
+  ('common-integrated-17','common-chronology','common-integrated-boss','下列对传统纪年的理解，正确的是？','天干有十二个，地支有十个','十天干和十二地支依次相配形成干支纪年','甲子只指一个月的第一天','年号纪年与帝王统治无关','B','正确答案：十天干和十二地支依次相配形成干支纪年','十天干、十二地支相配，形成六十年一循环的干支体系。','选项颠倒天干地支数量，或误解甲子和年号纪年。','记住数字但不理解组合规则。','十干十二支，六十成甲子。',3),
+  ('common-integrated-18','common-embroidery','common-integrated-boss','下列组合中，全部属于中国四大名绣的是？','苏绣、湘绣、粤绣、蜀绣','苏绣、杭绣、京绣、蜀绣','湘绣、汴绣、粤绣、京绣','苏绣、苗绣、粤绣、蜀绣','A','正确答案：苏绣、湘绣、粤绣、蜀绣','四大名绣固定为苏、湘、粤、蜀四种。','其余选项掺入具有地方特色但不属四大名绣的绣种。','只凭地名熟悉程度选择。','苏湘粤蜀，四大名绣。',2),
+  ('common-integrated-19','common-historical-records','common-integrated-boss','按作者生活时代先后排列，下列顺序正确的是？','司马迁—陈寿—罗贯中','罗贯中—陈寿—司马迁','陈寿—司马迁—罗贯中','司马迁—罗贯中—陈寿','A','正确答案：司马迁—陈寿—罗贯中','司马迁为西汉史学家，陈寿为西晋史学家，罗贯中为元末明初小说家。','先按作者所处朝代定位，再比较先后。','把三国题材作品的作者都误放在同一时代。','司马迁西汉，陈寿西晋，罗贯中元末明初。',4),
+  ('common-integrated-20','common-lin-zexu','common-integrated-boss','下列常识表述正确的是？','“苟利国家生死以”体现以国家利益为重的担当精神','《三国演义》是陈寿撰写的正史','《本草纲目》由张仲景编撰','干支纪年七十年为一甲子','A','正确答案：“苟利国家生死以”体现以国家利益为重的担当精神','该句出自林则徐作品，表达以国家利益为重的担当精神。','其余选项分别误配史书作者、医学著作作者和干支循环年数。','把多个学科的固定事实混在一题时遗漏细节。','国事林则徐，三志陈寿，本草时珍，甲子六十。',3)
 )
 insert into public.questions (id,knowledge_id,level_id,question_type,stem,options,correct_answer,explanation,difficulty,published,version)
 select id,knowledge_id,level_id,'single_choice',stem,

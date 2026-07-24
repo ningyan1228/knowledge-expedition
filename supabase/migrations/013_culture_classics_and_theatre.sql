@@ -30,8 +30,7 @@ insert into public.knowledge_relations (source_id,target_id,relation_type,label,
   ('culture-opera-four-skills','culture-jingju','applies_to','戏曲表演',1),
   ('culture-shuijingzhu','culture-mengxi','context','科技典籍',1),
   ('culture-mengxi','culture-tiangong','context','古代科学记录',1),
-  ('culture-tiangong','culture-agriculture-books','context','生产技术文献',1),
-  ('culture-kunqu','culture-festivals','context','传统艺术',1)
+  ('culture-tiangong','culture-agriculture-books','context','生产技术文献',1)
 on conflict (source_id,target_id,relation_type) do update set label=excluded.label,weight=excluded.weight;
 
 with seed(id,knowledge_id,level_id,stem,a,b,c,d,answer,summary,why_correct,why_wrong,mistake,tip,difficulty) as (values
