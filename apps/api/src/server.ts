@@ -6,7 +6,7 @@ import { z } from "zod";
 import { answerInput, startSessionInput, orderInput } from "@expedition/content-schema";
 import { answersEqual, masteryDelta, nextReview, rewardFor, starsFor } from "@expedition/game-engine";
 import type { Level, SessionSnapshot } from "@expedition/shared";
-import { chapters, knowledgeItems, levels, questions, questionsForLevel, worlds } from "./content-catalog.js";
+import { chapters, knowledgeItems, levels, loadKnowledgeGraph, questions, questionsForLevel, worlds } from "./content-catalog.js";
 import { MemoryLearningStore } from "./store.js";
 import { MockPaymentProvider } from "./payment.js";
 import { consumeMergeTicket, createMergeTicket, loadPlayerGameState, registerEmailRequest, requireAuth, requirePermanentUser, savePlayerGameState, verifyTurnstile } from "./auth.js";
@@ -47,6 +47,10 @@ app.post("/api/v1/auth/merge-ticket",async request=>createMergeTicket(request));
 app.post("/api/v1/auth/merge",async(request,reply)=>{const body=z.object({token:z.string().min(20)}).safeParse(request.body);if(!body.success)return reply.code(400).send({error:{code:"INVALID_INPUT",message:"合并凭证无效",requestId:request.id}});return consumeMergeTicket(request,body.data.token);});
 
 app.get("/api/v1/worlds",async()=>worlds);
+app.get("/api/v1/knowledge-graph",async request=>{
+  const focusId=typeof (request.query as {knowledgeId?:unknown}).knowledgeId==="string"?(request.query as {knowledgeId:string}).knowledgeId:undefined;
+  return loadKnowledgeGraph(focusId);
+});
 app.get("/api/v1/worlds/:worldId",async request=>{const id=(request.params as {worldId:string}).worldId;return {world:worlds.find(item=>item.id===id)??null,chapters:chapters.filter(chapter=>chapter.worldId===id).map(({id:chapterId,name,description})=>({id:chapterId,name,description}))};});
 app.get("/api/v1/chapters/:chapterId",async request=>{const id=(request.params as {chapterId:string}).chapterId;const chapter=chapters.find(item=>item.id===id);if(!chapter)fail("章节不存在",404);const userId=await playerId(request);return {...chapter,levels:levelState(userId,id)};});
 app.get("/api/v1/levels/:levelId",async request=>{const id=(request.params as {levelId:string}).levelId;const raw=levels.find(item=>item.id===id);if(!raw)fail("关卡不存在",404);const userId=await playerId(request);const level=levelState(userId,raw.chapterId).find(item=>item.id===id);if(!level)fail("关卡不存在",404);return level;});

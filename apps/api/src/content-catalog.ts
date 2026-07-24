@@ -2,6 +2,8 @@ import { createClient } from "@supabase/supabase-js";
 import type { AnswerExplanation, Chapter, Level, PublicQuestion, SubmittedAnswer, World } from "@expedition/shared";
 
 export type SecretQuestion={id:string;levelId:string;knowledgeId:string;public:PublicQuestion;answer:SubmittedAnswer;explanation:AnswerExplanation;difficulty:number;kind:"basic"|"relation"|"application"};
+export type KnowledgeGraphNode={id:string;name:string;summary:string;coreFact:string;category:string;commonMistake:string;memoryTip:string};
+export type KnowledgeGraphRelation={sourceId:string;targetId:string;relationType:string;label:string;weight:number};
 type Row=Record<string,unknown>;
 
 const url=process.env.SUPABASE_URL;
@@ -52,3 +54,22 @@ export async function loadContentCatalog(){
 const catalog=await loadContentCatalog();
 export const {worlds,chapters,levels,knowledgeItems,questions}=catalog;
 export function questionsForLevel(levelId:string){return questions.filter(question=>question.levelId===levelId);}
+
+export async function loadKnowledgeGraph(focusId?:string){
+  const [pointResult,relationResult]=await Promise.all([
+    db.from("knowledge_points").select("id,name,summary,core_fact,category,common_mistake,memory_tip").eq("published",true),
+    db.from("knowledge_relations").select("source_id,target_id,relation_type,label,weight")
+  ]);
+  const points=(dataOrThrow(pointResult,"knowledge_points") as Row[]).map<KnowledgeGraphNode>(row=>({
+    id:string(row,"id"),name:string(row,"name"),summary:string(row,"summary"),coreFact:string(row,"core_fact"),category:string(row,"category"),commonMistake:string(row,"common_mistake"),memoryTip:string(row,"memory_tip")
+  }));
+  const relations=(dataOrThrow(relationResult,"knowledge_relations") as Row[]).map<KnowledgeGraphRelation>(row=>({
+    sourceId:string(row,"source_id"),targetId:string(row,"target_id"),relationType:string(row,"relation_type"),label:string(row,"label"),weight:number(row,"weight")
+  }));
+  const pointById=new Map(points.map(point=>[point.id,point]));
+  const chosen=pointById.get(focusId??"")??pointById.get(relations[0]?.sourceId??"")??points[0];
+  if(!chosen)throw new Error("Supabase 知识图谱为空");
+  const adjacent=relations.filter(relation=>relation.sourceId===chosen.id||relation.targetId===chosen.id);
+  const neighborIds=new Set(adjacent.map(relation=>relation.sourceId===chosen.id?relation.targetId:relation.sourceId));
+  return {focus:chosen,nodes:[chosen,...[...neighborIds].map(id=>pointById.get(id)).filter((point):point is KnowledgeGraphNode=>Boolean(point))],relations:adjacent};
+}

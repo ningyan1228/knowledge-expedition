@@ -66,7 +66,15 @@ export function AnswerExplanation({ correct, explanation, delta, nextReview }: {
 
 export function ReviewScheduleCard({ label, count, active }: { label: string; count: string; active?: boolean }) { return <article className={`schedule-card ${active ? "active" : ""}`}><span>{label}</span><strong>{count}</strong><small>个知识点</small></article>; }
 
-export function KnowledgeNode({ icon, label, items }: { icon: ReactNode; label: string; items: string[] }) { return <section className="knowledge-node"><span>{icon}</span><b>{label}</b><div>{items.map(item => <button type="button" key={item}>{item}</button>)}</div></section>; }
+export function KnowledgeNode({ icon, label, items, discovered, onPick }: { icon: ReactNode; label: string; items: Array<{id:string;name:string}>; discovered?: boolean; onPick?:(id:string)=>void }) {
+  const primary = items[0];
+  return <section className={`knowledge-node ${discovered ? "discovered" : ""}`}>
+    <button type="button" className="knowledge-node-button" disabled={!primary} onClick={() => primary && onPick?.(primary.id)}>
+      <span>{icon}</span><b>{label}</b><small>{primary?.name ?? "等待发现"}</small>
+    </button>
+    <div aria-label={`${label}关联知识`}>{items.slice(1).map(item => <button type="button" key={item.id} onClick={() => onPick?.(item.id)}>{item.name}</button>)}</div>
+  </section>;
+}
 
 export function KnowledgeDetailPanel() { return <aside className="knowledge-detail"><p className="paper-kicker">历史事件</p><h2>赤壁之战</h2><dl><div><dt>时间</dt><dd>公元 208 年</dd></div><div><dt>参战方</dt><dd>曹操 vs 孙刘联军</dd></div><div><dt>结果</dt><dd>孙刘联军胜利</dd></div></dl><p>东汉末年的关键战役，奠定三国鼎立局面。将人物、地点和典故一起记忆，更容易建立稳定知识网络。</p><h3>相关知识</h3><ul><li>官渡之战</li><li>三国鼎立</li><li>周瑜</li><li>赤壁赋</li></ul><Link className="button primary" to="/battle/idiom-2">去学习这个知识点</Link></aside>; }
 
