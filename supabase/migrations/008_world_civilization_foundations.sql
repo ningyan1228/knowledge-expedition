@@ -5,7 +5,7 @@ insert into public.worlds (id,name,slug,description,theme,free_chapter_count,pub
 on conflict (id) do update set name=excluded.name,slug=excluded.slug,description=excluded.description,theme=excluded.theme,free_chapter_count=excluded.free_chapter_count,published=excluded.published,version=excluded.version;
 
 insert into public.chapters (id,world_id,name,sort,is_free,published,version,description,intro,boss_name,boss_description) values
-  ('civilization-timeline','文明长河',1,true,true,1,'古代文明、思想艺术与近现代世界变革 · 20 道训练题','先定位文明起点，再把思想、革命与国际秩序连成线。','文明坐标试炼','在时代、人物、著作和事件之间找到正确连接。')
+  ('civilization-timeline','civilization','文明长河',1,true,true,1,'古代文明、思想艺术与近现代世界变革 · 20 道训练题','先定位文明起点，再把思想、革命与国际秩序连成线。','文明坐标试炼','在时代、人物、著作和事件之间找到正确连接。')
 on conflict (id) do update set world_id=excluded.world_id,name=excluded.name,sort=excluded.sort,is_free=excluded.is_free,published=excluded.published,version=excluded.version,description=excluded.description,intro=excluded.intro,boss_name=excluded.boss_name,boss_description=excluded.boss_description;
 
 insert into public.levels (id,chapter_id,name,kind,sort,pass_score,reward_xp,published,version,summary) values

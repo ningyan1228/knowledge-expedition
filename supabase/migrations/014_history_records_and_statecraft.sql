@@ -1,7 +1,7 @@
 -- 华夏纪年：史书体例、汉代集权与古代战役地理。内容只写入 Supabase。
 
 insert into public.chapters (id,world_id,name,sort,is_free,published,version,description,intro,boss_name,boss_description) values
-  ('history-records','史书与治道',2,true,true,1,'史书体例、古代治道与战役坐标 · 20 道训练题','以时间、人物、制度和地点为四条线，搭建可靠的历史坐标。','治道纵横试炼','在史书体例、制度目的和战争地理间识别准确关系。')
+  ('history-records','history','史书与治道',2,true,true,1,'史书体例、古代治道与战役坐标 · 20 道训练题','以时间、人物、制度和地点为四条线，搭建可靠的历史坐标。','治道纵横试炼','在史书体例、制度目的和战争地理间识别准确关系。')
 on conflict (id) do update set world_id=excluded.world_id,name=excluded.name,sort=excluded.sort,is_free=excluded.is_free,published=excluded.published,version=excluded.version,description=excluded.description,intro=excluded.intro,boss_name=excluded.boss_name,boss_description=excluded.boss_description;
 
 insert into public.levels (id,chapter_id,name,kind,sort,pass_score,reward_xp,published,version,summary) values

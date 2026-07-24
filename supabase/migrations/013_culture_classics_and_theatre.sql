@@ -1,7 +1,7 @@
 -- 文化万象：汉字典籍、戏曲艺术与古代科技文献。内容只写入 Supabase。
 
 insert into public.chapters (id,world_id,name,sort,is_free,published,version,description,intro,boss_name,boss_description) values
-  ('culture-classics','典籍与舞台',2,true,true,1,'汉字、戏曲、典籍与农工智慧 · 20 道训练题','从一部书、一种写法、一段身段开始，看见文化如何被保存和传承。','典籍舞台试炼','分清作者、体例、艺术门类与作品价值。')
+  ('culture-classics','culture','典籍与舞台',2,true,true,1,'汉字、戏曲、典籍与农工智慧 · 20 道训练题','从一部书、一种写法、一段身段开始，看见文化如何被保存和传承。','典籍舞台试炼','分清作者、体例、艺术门类与作品价值。')
 on conflict (id) do update set world_id=excluded.world_id,name=excluded.name,sort=excluded.sort,is_free=excluded.is_free,published=excluded.published,version=excluded.version,description=excluded.description,intro=excluded.intro,boss_name=excluded.boss_name,boss_description=excluded.boss_description;
 
 insert into public.levels (id,chapter_id,name,kind,sort,pass_score,reward_xp,published,version,summary) values

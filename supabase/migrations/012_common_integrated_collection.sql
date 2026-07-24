@@ -1,7 +1,7 @@
 -- 公考常识：国家象征、史学文献与传统医学的综合判断训练。内容只写入 Supabase。
 
 insert into public.chapters (id,world_id,name,sort,is_free,published,version,description,intro,boss_name,boss_description) values
-  ('common-integrated','知行万象',2,true,true,1,'国家象征、史学文献、传统医学与跨域判断 · 20 道训练题','把零散常识放进人物、文献、时间与制度的坐标中。','万象综合试炼','综合判断作品、人物、制度与国家象征的准确对应。')
+  ('common-integrated','common','知行万象',2,true,true,1,'国家象征、史学文献、传统医学与跨域判断 · 20 道训练题','把零散常识放进人物、文献、时间与制度的坐标中。','万象综合试炼','综合判断作品、人物、制度与国家象征的准确对应。')
 on conflict (id) do update set world_id=excluded.world_id,name=excluded.name,sort=excluded.sort,is_free=excluded.is_free,published=excluded.published,version=excluded.version,description=excluded.description,intro=excluded.intro,boss_name=excluded.boss_name,boss_description=excluded.boss_description;
 
 insert into public.levels (id,chapter_id,name,kind,sort,pass_score,reward_xp,published,version,summary) values

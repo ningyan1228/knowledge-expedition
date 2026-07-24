@@ -1,7 +1,7 @@
 -- 文化万象：节俗、典故、艺术与语用常识。内容只写入 Supabase。
 
 insert into public.chapters (id,world_id,name,sort,is_free,published,version,description,intro,boss_name,boss_description) values
-  ('culture-heritage','文化拾遗',2,true,true,1,'节俗、典故、书画、戏曲与语用常识 · 20 道训练题','从一个节日、一件乐器、一部作品开始，把文化记忆串成网络。','文脉寻珍试炼','在人物、作品、节俗和艺术形式之间找出准确对应。')
+  ('culture-heritage','culture','文化拾遗',2,true,true,1,'节俗、典故、书画、戏曲与语用常识 · 20 道训练题','从一个节日、一件乐器、一部作品开始，把文化记忆串成网络。','文脉寻珍试炼','在人物、作品、节俗和艺术形式之间找出准确对应。')
 on conflict (id) do update set world_id=excluded.world_id,name=excluded.name,sort=excluded.sort,is_free=excluded.is_free,published=excluded.published,version=excluded.version,description=excluded.description,intro=excluded.intro,boss_name=excluded.boss_name,boss_description=excluded.boss_description;
 
 insert into public.levels (id,chapter_id,name,kind,sort,pass_score,reward_xp,published,version,summary) values

@@ -5,7 +5,7 @@ insert into public.worlds (id,name,slug,description,theme,free_chapter_count,pub
 on conflict (id) do update set name=excluded.name,slug=excluded.slug,description=excluded.description,theme=excluded.theme,free_chapter_count=excluded.free_chapter_count,published=excluded.published,version=excluded.version;
 
 insert into public.chapters (id,world_id,name,sort,is_free,published,version,description,intro,boss_name,boss_description) values
-  ('nature-lab','科学观察室',1,true,true,1,'四大发明、生命科学、物理与天文地理 · 20 道训练题','用证据观察技术与自然：先识别规律，再排除看似正确的干扰。','自然规律试炼','把技术、生命、物理和宇宙知识串成可验证的解释。')
+  ('nature-lab','nature','科学观察室',1,true,true,1,'四大发明、生命科学、物理与天文地理 · 20 道训练题','用证据观察技术与自然：先识别规律，再排除看似正确的干扰。','自然规律试炼','把技术、生命、物理和宇宙知识串成可验证的解释。')
 on conflict (id) do update set world_id=excluded.world_id,name=excluded.name,sort=excluded.sort,is_free=excluded.is_free,published=excluded.published,version=excluded.version,description=excluded.description,intro=excluded.intro,boss_name=excluded.boss_name,boss_description=excluded.boss_description;
 
 insert into public.levels (id,chapter_id,name,kind,sort,pass_score,reward_xp,published,version,summary) values

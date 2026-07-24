@@ -5,7 +5,7 @@ insert into public.worlds (id,name,slug,description,theme,free_chapter_count,pub
 on conflict (id) do update set name=excluded.name,slug=excluded.slug,description=excluded.description,theme=excluded.theme,free_chapter_count=excluded.free_chapter_count,published=excluded.published,version=excluded.version;
 
 insert into public.chapters (id,world_id,name,sort,is_free,published,version,description,intro,boss_name,boss_description) values
-  ('poetry-river','诗词山河',1,true,true,1,'诗歌源流、唐宋名家与作品意境 · 20 道训练题','先抓作者与时代，再读懂作品的语言、意象和情感。','诗意连线试炼','在诗人、作品、文学体裁和情感主题间建立准确联系。')
+  ('poetry-river','poetry','诗词山河',1,true,true,1,'诗歌源流、唐宋名家与作品意境 · 20 道训练题','先抓作者与时代，再读懂作品的语言、意象和情感。','诗意连线试炼','在诗人、作品、文学体裁和情感主题间建立准确联系。')
 on conflict (id) do update set world_id=excluded.world_id,name=excluded.name,sort=excluded.sort,is_free=excluded.is_free,published=excluded.published,version=excluded.version,description=excluded.description,intro=excluded.intro,boss_name=excluded.boss_name,boss_description=excluded.boss_description;
 
 insert into public.levels (id,chapter_id,name,kind,sort,pass_score,reward_xp,published,version,summary) values

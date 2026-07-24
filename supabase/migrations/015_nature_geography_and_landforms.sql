@@ -1,7 +1,7 @@
 -- 科技自然馆：地貌、中国地理与自然分界线。内容只写入 Supabase。
 
 insert into public.chapters (id,world_id,name,sort,is_free,published,version,description,intro,boss_name,boss_description) values
-  ('nature-landforms','山河观察站',2,true,true,1,'高原、山脉、河流与自然分界线 · 20 道训练题','让地貌、气候、河流与区域特征在地图上彼此照应。','山河坐标试炼','通过区域特征和成因，定位中国自然地理。')
+  ('nature-landforms','nature','山河观察站',2,true,true,1,'高原、山脉、河流与自然分界线 · 20 道训练题','让地貌、气候、河流与区域特征在地图上彼此照应。','山河坐标试炼','通过区域特征和成因，定位中国自然地理。')
 on conflict (id) do update set world_id=excluded.world_id,name=excluded.name,sort=excluded.sort,is_free=excluded.is_free,published=excluded.published,version=excluded.version,description=excluded.description,intro=excluded.intro,boss_name=excluded.boss_name,boss_description=excluded.boss_description;
 
 insert into public.levels (id,chapter_id,name,kind,sort,pass_score,reward_xp,published,version,summary) values
