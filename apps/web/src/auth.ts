@@ -11,7 +11,7 @@ const mockIdentityKey = "knowledge-expedition-mock-identity";
 const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY?.trim();
 
 export const supabase = supabaseUrl && supabaseAnonKey
-  ? createClient(supabaseUrl, supabaseAnonKey, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false } })
+  ? createClient(supabaseUrl, supabaseAnonKey, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } })
   : null;
 
 type AuthState = {
@@ -99,7 +99,7 @@ export const useAuth = create<AuthState>((set, get) => ({
     if (!supabase) { set({ pendingEmail: email }); return; }
     if (import.meta.env.PROD && (!turnstileSiteKey || !captchaToken)) throw new Error("请先完成安全验证");
     // supabase-js 2.110 exposes no captchaToken option on updateUser; the proxy preflight above verifies Turnstile before this identity-linking request.
-    const { error } = await supabase.auth.updateUser({ email });
+    const { error } = await supabase.auth.updateUser({ email }, { emailRedirectTo: window.location.origin });
     if (error) {
       const message = error.message.toLowerCase();
       if ((message.includes("already") || message.includes("exists")) && get().session) {
@@ -122,7 +122,7 @@ export const useAuth = create<AuthState>((set, get) => ({
     if (!supabase) { set({ pendingEmail: email }); return; }
     if (import.meta.env.PROD && (!turnstileSiteKey || !captchaToken)) throw new Error("请先完成安全验证");
     // 首次输入的新邮箱也应创建正式账户；游客账号可在后续完成绑定。
-    const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true, ...(captchaToken ? { captchaToken } : {}) } });
+    const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true, emailRedirectTo: window.location.origin, ...(captchaToken ? { captchaToken } : {}) } });
     if (error) throw friendlyError(error); set({ pendingEmail: email });
   },
   verifyLoginEmail: async (email, token) => {

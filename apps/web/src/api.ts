@@ -1,7 +1,7 @@
 import type { AnswerResult, Chapter, Level, LevelResult, Mastery, ProgressMap, SessionSnapshot, SubmittedAnswer, World, WrongQuestion, ReviewItem } from "@expedition/shared";
 import { getAccessToken } from "./auth";
 
-export type KnowledgeGraphNode={id:string;name:string;summary:string;coreFact:string;category:string;commonMistake:string;memoryTip:string};
+export type KnowledgeGraphNode={id:string;name:string;summary:string;coreFact:string;category:string;commonMistake:string;memoryTip:string;levelId?:string};
 export type KnowledgeGraphRelation={sourceId:string;targetId:string;relationType:string;label:string;weight:number};
 export type KnowledgeGraph={focus:KnowledgeGraphNode;nodes:KnowledgeGraphNode[];relations:KnowledgeGraphRelation[]};
 
