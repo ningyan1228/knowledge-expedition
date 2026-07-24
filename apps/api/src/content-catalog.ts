@@ -12,7 +12,11 @@ if(!url||!serviceKey)throw new Error("缺少 SUPABASE_URL 或 SUPABASE_SERVICE_R
 const db=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
 
 function dataOrThrow<T>(result:{data:T|null;error:{message:string}|null},name:string):T{if(result.error)throw new Error(`读取 Supabase ${name} 失败：${result.error.message}`);if(result.data===null)throw new Error(`Supabase ${name} 没有返回数据`);return result.data;}
-function json<T>(value:unknown):T{if(typeof value==="string")return JSON.parse(value) as T;return value as T;}
+function json<T>(value:unknown):T{
+  if(typeof value!=="string")return value as T;
+  // jsonb objects may arrive as objects, but jsonb scalar answers arrive as plain "A"/"B" strings.
+  try{return JSON.parse(value) as T;}catch{return value as T;}
+}
 function string(row:Row,key:string){const value=row[key];return typeof value==="string"?value:"";}
 function number(row:Row,key:string){const value=row[key];return typeof value==="number"?value:Number(value??0);}
 function bool(row:Row,key:string){return row[key]===true;}
