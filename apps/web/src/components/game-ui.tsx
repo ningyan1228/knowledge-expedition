@@ -1,8 +1,9 @@
-import type { CSSProperties, ReactNode } from "react";
-import { BookOpen, Brain, Check, ChevronRight, CircleHelp, Compass, Flag, Gem, Home, LockKeyhole, Map, Medal, Network, ScrollText, ShieldCheck, ShoppingBag, Sparkles, Swords, Trophy, UserRound, X } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { useState, type CSSProperties, type ReactNode } from "react";
+import { BookOpen, Brain, Check, ChevronDown, ChevronRight, CircleHelp, Compass, Flag, Gem, Home, LockKeyhole, LogOut, Map, Medal, Network, ScrollText, ShieldCheck, ShoppingBag, Sparkles, Swords, Trophy, UserRound, X } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import type { Level, PublicQuestion } from "@expedition/shared";
 import type { ExpeditionWorld } from "../mock-content";
+import { useAuth } from "../auth";
 
 export function ProgressBar({ value, tone = "gold", label }: { value: number; tone?: "gold" | "green" | "violet" | "blue"; label?: string }) {
   return <div className="mastery-bar" aria-label={label ?? `进度 ${value}%`}><i className={`tone-${tone}`} style={{ width: `${Math.max(0, Math.min(100, value))}%` }} /></div>;
@@ -13,8 +14,38 @@ export function ProgressRing({ value, label = "今日完成度" }: { value: numb
 }
 
 export function TopStatusBar({ dark = false }: { dark?: boolean }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const navigate = useNavigate();
+  const signOut = useAuth(state => state.signOut);
+  const user = useAuth(state => state.user);
+  const mode = useAuth(state => state.mode);
+  const accountLabel = mode === "permanent" ? user?.email ?? "已登录账号" : "当前为游客模式";
+
+  async function handleSignOut() {
+    if (!window.confirm("确定退出当前账号吗？退出后可随时重新登录继续学习。")) return;
+    setSigningOut(true);
+    try {
+      await signOut();
+      navigate("/", { replace: true });
+    } catch {
+      window.alert("退出登录暂时失败，请稍后再试。");
+      setSigningOut(false);
+    }
+  }
+
   return <div className={`top-status ${dark ? "is-dark" : ""}`} aria-label="远征者状态">
-    <span><Sparkles /> 连续学习 <b>7 天</b></span><span><Trophy /> <b>3250</b></span><span><Gem /> <b>120</b></span><span className="status-avatar">远</span><span className="level-label">远征者 Lv.12</span>
+    <span><Sparkles /> 连续学习 <b>7 天</b></span><span><Trophy /> <b>3250</b></span><span><Gem /> <b>120</b></span>
+    <div className="account-menu">
+      <button type="button" className="account-menu-trigger" aria-expanded={menuOpen} aria-haspopup="menu" onClick={() => setMenuOpen(open => !open)}>
+        <span className="status-avatar" aria-hidden="true">远</span><span className="level-label">远征者 Lv.12</span><ChevronDown aria-hidden="true" />
+      </button>
+      {menuOpen && <div className="account-menu-popover" role="menu">
+        <div className="account-menu-summary"><span className="status-avatar" aria-hidden="true">远</span><div><b>远征者 Lv.12</b><small>{accountLabel}</small></div></div>
+        <Link to="/account" role="menuitem" onClick={() => setMenuOpen(false)}><UserRound />账号与隐私</Link>
+        <button type="button" role="menuitem" disabled={signingOut} onClick={() => void handleSignOut()}><LogOut />{signingOut ? "正在退出…" : "退出登录"}</button>
+      </div>}
+    </div>
   </div>;
 }
 
