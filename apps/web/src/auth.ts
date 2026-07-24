@@ -29,6 +29,7 @@ type AuthState = {
   verifyBindEmail: (email: string, token: string) => Promise<void>;
   requestLoginEmail: (email: string, captchaToken?: string) => Promise<void>;
   verifyLoginEmail: (email: string, token: string) => Promise<void>;
+  updateDisplayName: (displayName: string) => Promise<void>;
   signOut: () => Promise<void>;
   openDialog: (intent: AuthDialogIntent) => void;
   closeDialog: () => void;
@@ -39,8 +40,13 @@ function modeFor(user: User | null): AuthMode {
   return user.is_anonymous ? "guest" : "permanent";
 }
 
-function mockUser(id: string, email?: string): User {
-  return { id, app_metadata: {}, user_metadata: {}, aud: "authenticated", created_at: new Date().toISOString(), is_anonymous: !email, email } as User;
+function mockUser(id: string, email?: string, displayName?: string): User {
+  return { id, app_metadata: {}, user_metadata: displayName ? { display_name: displayName } : {}, aud: "authenticated", created_at: new Date().toISOString(), is_anonymous: !email, email } as User;
+}
+
+export function displayNameFor(user: User | null): string {
+  const displayName = user?.user_metadata?.display_name;
+  return typeof displayName === "string" && displayName.trim() ? displayName.trim() : "远征者";
 }
 
 function friendlyError(error: unknown): Error {
@@ -75,8 +81,8 @@ export const useAuth = create<AuthState>((set, get) => ({
   init: async () => {
     if (!supabase) {
       const raw = sessionStorage.getItem(mockIdentityKey);
-      const parsed = raw ? JSON.parse(raw) as { id: string; email?: string } : null;
-      const user = parsed ? mockUser(parsed.id, parsed.email) : null;
+      const parsed = raw ? JSON.parse(raw) as { id: string; email?: string; displayName?: string } : null;
+      const user = parsed ? mockUser(parsed.id, parsed.email, parsed.displayName) : null;
       set({ user, mode: modeFor(user), isAnonymous: Boolean(user?.is_anonymous), initialized: true });
       return;
     }
@@ -111,7 +117,7 @@ export const useAuth = create<AuthState>((set, get) => ({
     set({ pendingEmail: email });
   },
   verifyBindEmail: async (email, token) => {
-    if (!supabase) { if (token !== "123456") throw new Error("验证码不正确，请检查后重新输入"); const current = get().user; if (!current) throw new Error("游客会话已失效，请重新开始远征"); const user = mockUser(current.id, email); sessionStorage.setItem(mockIdentityKey, JSON.stringify({ id: current.id, email })); set({ user, mode: "permanent", isAnonymous: false, pendingEmail: null }); return; }
+    if (!supabase) { if (token !== "123456") throw new Error("验证码不正确，请检查后重新输入"); const current = get().user; if (!current) throw new Error("游客会话已失效，请重新开始远征"); const displayName = displayNameFor(current); const user = mockUser(current.id, email, displayName); sessionStorage.setItem(mockIdentityKey, JSON.stringify({ id: current.id, email, displayName })); set({ user, mode: "permanent", isAnonymous: false, pendingEmail: null }); return; }
     const { data, error } = await supabase.auth.verifyOtp({ email, token, type: "email_change" });
     if (error) throw friendlyError(error);
     const session = data.session ?? (await supabase.auth.getSession()).data.session;
@@ -132,6 +138,21 @@ export const useAuth = create<AuthState>((set, get) => ({
     const mergeToken = get().pendingMergeToken;
     if (mergeToken) await apiAuthCall("/auth/merge", data.session, { token: mergeToken });
     set({ user: data.user, session: data.session, mode: "permanent", isAnonymous: false, pendingEmail: null, pendingMergeToken: null });
+  },
+  updateDisplayName: async displayName => {
+    const normalized = displayName.trim().replace(/\s+/g, " ");
+    if (normalized.length < 2 || normalized.length > 16) throw new Error("昵称请使用 2–16 个字符");
+    const current = get().user;
+    if (!current) throw new Error("请先登录后再修改昵称");
+    if (!supabase) {
+      const user = mockUser(current.id, current.email, normalized);
+      sessionStorage.setItem(mockIdentityKey, JSON.stringify({ id: current.id, email: current.email, displayName: normalized }));
+      set({ user });
+      return;
+    }
+    const { data, error } = await supabase.auth.updateUser({ data: { display_name: normalized } });
+    if (error) throw friendlyError(error);
+    set({ user: data.user ?? current });
   },
   signOut: async () => { if (supabase) await supabase.auth.signOut(); sessionStorage.removeItem(mockIdentityKey); set({ user: null, session: null, mode: "signed_out", isAnonymous: false }); },
   openDialog: intent => set({ dialog: intent, pendingEmail: intent === "login" ? get().pendingEmail : null }), closeDialog: () => set({ dialog: null, pendingEmail: null }),

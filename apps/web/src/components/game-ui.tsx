@@ -1,9 +1,16 @@
-import { useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { BookOpen, Brain, Check, ChevronDown, ChevronRight, CircleHelp, Compass, Flag, Gem, Home, LockKeyhole, LogOut, Map, Medal, Network, ScrollText, ShieldCheck, ShoppingBag, Sparkles, Swords, Trophy, UserRound, X } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import type { Level, PublicQuestion } from "@expedition/shared";
 import type { ExpeditionWorld } from "../mock-content";
-import { useAuth } from "../auth";
+import { api, type PlayerProfile } from "../api";
+import { displayNameFor, useAuth } from "../auth";
+
+const emptyProfile: PlayerProfile = {
+  xp: 0, coins: 0, stars: 0, completedLevels: 0, masteryCount: 0,
+  totalQuestions: 0, correctAnswers: 0, correctRate: 0, studyDays: 0,
+  streak: 0, masteryRate: 0, weeklyActivity: [0, 0, 0, 0, 0, 0, 0],
+};
 
 export function ProgressBar({ value, tone = "gold", label }: { value: number; tone?: "gold" | "green" | "violet" | "blue"; label?: string }) {
   return <div className="mastery-bar" aria-label={label ?? `进度 ${value}%`}><i className={`tone-${tone}`} style={{ width: `${Math.max(0, Math.min(100, value))}%` }} /></div>;
@@ -16,11 +23,21 @@ export function ProgressRing({ value, label = "今日完成度" }: { value: numb
 export function TopStatusBar({ dark = false }: { dark?: boolean }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const [profile, setProfile] = useState<PlayerProfile>(emptyProfile);
   const navigate = useNavigate();
   const signOut = useAuth(state => state.signOut);
   const user = useAuth(state => state.user);
   const mode = useAuth(state => state.mode);
   const accountLabel = mode === "permanent" ? user?.email ?? "已登录账号" : "当前为游客模式";
+  const displayName = displayNameFor(user);
+  const avatar = displayName.slice(0, 1) || "远";
+  const level = Math.max(1, Math.floor(profile.xp / 300) + 1);
+
+  useEffect(() => {
+    let disposed = false;
+    void api.profile().then(data => { if (!disposed) setProfile(data); }).catch(() => { if (!disposed) setProfile(emptyProfile); });
+    return () => { disposed = true; };
+  }, [user?.id]);
 
   async function handleSignOut() {
     if (!window.confirm("确定退出当前账号吗？退出后可随时重新登录继续学习。")) return;
@@ -35,13 +52,13 @@ export function TopStatusBar({ dark = false }: { dark?: boolean }) {
   }
 
   return <div className={`top-status ${dark ? "is-dark" : ""}`} aria-label="远征者状态">
-    <span><Sparkles /> 连续学习 <b>7 天</b></span><span><Trophy /> <b>3250</b></span><span><Gem /> <b>120</b></span>
+    <span><Sparkles /> 连续学习 <b>{profile.streak} 天</b></span><span><Trophy /> <b>{profile.coins}</b></span><span><Gem /> <b>{profile.stars}</b></span>
     <div className="account-menu">
       <button type="button" className="account-menu-trigger" aria-expanded={menuOpen} aria-haspopup="menu" onClick={() => setMenuOpen(open => !open)}>
-        <span className="status-avatar" aria-hidden="true">远</span><span className="level-label">远征者 Lv.12</span><ChevronDown aria-hidden="true" />
+        <span className="status-avatar" aria-hidden="true">{avatar}</span><span className="level-label">{displayName} Lv.{level}</span><ChevronDown aria-hidden="true" />
       </button>
       {menuOpen && <div className="account-menu-popover" role="menu">
-        <div className="account-menu-summary"><span className="status-avatar" aria-hidden="true">远</span><div><b>远征者 Lv.12</b><small>{accountLabel}</small></div></div>
+        <div className="account-menu-summary"><span className="status-avatar" aria-hidden="true">{avatar}</span><div><b>{displayName} Lv.{level}</b><small>{accountLabel}</small></div></div>
         <Link to="/account" role="menuitem" onClick={() => setMenuOpen(false)}><UserRound />账号与隐私</Link>
         <button type="button" role="menuitem" disabled={signingOut} onClick={() => void handleSignOut()}><LogOut />{signingOut ? "正在退出…" : "退出登录"}</button>
       </div>}

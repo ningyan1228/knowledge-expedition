@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Award, BarChart3, BookMarked, Brain, CalendarDays, Clock3, Crown, Flag, Flame, Gem, Lightbulb, ListChecks, LockKeyhole, MapPinned, Menu, Pause, ScrollText, Settings, ShieldCheck, Sparkles, Star, Swords, Target, Timer, UserRound } from "lucide-react";
 import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import type { AnswerResult, Chapter, Level, LevelResult, PublicQuestion, SubmittedAnswer, WrongQuestion, ReviewItem } from "@expedition/shared";
-import { api } from "./api";
+import { api, type PlayerProfile } from "./api";
 import { expeditionWorlds, leaderboard } from "./mock-content";
 import { AchievementBadge, AnswerExplanation, AppShell, BookOpen, ChapterPath, Check, Compass, EmptyState, ErrorState, KnowledgeNode, LoadingSkeleton, OptionButton, ProgressBar, ProgressRing, QuestionCard, QuestCard, ReviewScheduleCard, Sparkles as SparkleIcon, Trophy, WorldIslandCard } from "./components/game-ui";
 import { usePlayer } from "./store";
-import { useAuth } from "./auth";
+import { displayNameFor, useAuth } from "./auth";
 import { AuthDialog } from "./components/auth-dialog";
 import { TurnstileWidget } from "./components/turnstile";
 import { hasCompleteAnswer, QuestionRenderer } from "./components/question-renderer";
@@ -49,9 +49,30 @@ function Onboarding() {
   return <section className="onboarding-screen"><header><Link to="/" aria-label="返回欢迎页"><ArrowLeft /></Link><ProgressBar value={(step + 1) / 3 * 100} /></header><div className="onboarding-card">{step === 0 && <><p className="eyebrow">第一步 · 定下方向</p><h1>这次远征，你想收获什么？</h1><div className="choice-list">{goals.map(item => <button type="button" className={goal === item ? "selected" : ""} onClick={() => setGoal(item)} key={item}>{item}<Chevron /></button>)}</div></>}{step === 1 && <><p className="eyebrow">第二步 · 安排行程</p><h1>每天留多少时间给自己？</h1><div className="time-options">{[5, 15, 30].map(item => <button type="button" key={item} className={minutes === item ? "selected" : ""} onClick={() => setMinutes(item)}><strong>{item}</strong><span>分钟</span><small>{item === 5 ? "轻量" : item === 15 ? "标准" : "强化"}</small></button>)}</div></>}{step === 2 && <><span className="route-seal"><MapPinned /></span><p className="eyebrow">路线已生成</p><h1>从文化万象启程</h1><p className="lead">先用一组精短挑战认识你的节奏，再沿地图逐步点亮知识。</p><div className="route-preview"><span>推荐首站</span><b>成语中的人物与承诺</b><small>{minutes} 分钟 · 5 个知识点 · 1 次守关挑战</small></div></>}<button type="button" className="button primary" onClick={() => step < 2 ? setStep(step + 1) : (finish(goal, minutes), navigate("/camp"))}>{step < 2 ? "继续" : "进入营地"}<ArrowRight /></button></div></section>;
 }
 
+const emptyProfile = (): PlayerProfile => ({
+  xp: 0, coins: 0, stars: 0, completedLevels: 0, masteryCount: 0,
+  totalQuestions: 0, correctAnswers: 0, correctRate: 0, studyDays: 0,
+  streak: 0, masteryRate: 0, weeklyActivity: [0, 0, 0, 0, 0, 0, 0],
+});
+const levelFor = (xp: number) => Math.max(1, Math.floor(xp / 300) + 1);
+const weekDays = ["一", "二", "三", "四", "五", "六", "日"];
+
+function useLearningProfile() {
+  const userId = useAuth(state => state.user?.id);
+  const [profile, setProfile] = useState<PlayerProfile>(emptyProfile);
+  useEffect(() => {
+    let disposed = false;
+    void api.profile().then(data => { if (!disposed) setProfile(data); }).catch(() => { if (!disposed) setProfile(emptyProfile()); });
+    return () => { disposed = true; };
+  }, [userId]);
+  return profile;
+}
+
 function Camp() {
-  const player = usePlayer();
-  return <AppShell title="知识远征" subtitle="探索知识，点亮世界" theme="camp"><div className="camp-scene"><div className="camp-mountain mountain-a" /><div className="camp-mountain mountain-b" /><div className="camp-content"><section className="camp-dashboard"><div className="quest-panel paper-panel"><div className="panel-heading"><div><p className="eyebrow">今日任务</p><h2>向前推进一小段</h2></div><CalendarDays /></div><QuestCard icon={<Check />} title="成语辨析" current={0} total={10} tone="gold" /><QuestCard icon={<Check />} title="公考常识" current={0} total={15} tone="green" /><QuestCard icon={<Brain />} title="到期复习" current={0} total={6} tone="violet" /><Link className="button primary task-cta" to="/battle/idiom-1">开始学习 <ArrowRight /></Link></div><div className="camp-side"><section className="mastery-panel paper-panel"><p className="eyebrow">我的掌握度</p><div className="mastery-main"><ProgressRing value={68} label="掌握度" /><div><b>超过 73% 的玩家</b><p>今天再获得 180 经验即可升级。</p><Link to="/profile" className="button outline">查看完整报告</Link></div></div></section><section className="achievement-panel paper-panel"><div><p className="eyebrow">连续学习天数</p><strong>{player.streak} 天</strong></div><div className="week-streak" aria-label="连续学习七天">{["一", "二", "三", "四", "五", "六", "日"].map((day, index) => <span className={index < 6 ? "done" : "today"} key={day}><small>{day}</small><Check /></span>)}</div></section></div></section><section className="achievement-strip"><div className="strip-title"><h2>本周成就</h2><Link to="/profile">查看全部 <ArrowRight /></Link></div><AchievementBadge icon={<Flame />} title="连胜 3 天" caption="学习不停步" /><AchievementBadge icon={<Trophy />} title="全对关卡" caption="精准判断" /><AchievementBadge icon={<Timer />} title="速算达人" caption="节奏正好" /></section><section className="continue-section"><div className="strip-title"><div><p className="eyebrow">继续远征</p><h2>选择下一段旅程</h2></div><Link to="/map">打开大地图 <MapPinned /></Link></div><div className="continue-worlds">{expeditionWorlds.filter(world => !world.locked).slice(0, 4).map((world, index) => <Link to={`/world/${world.id}`} className={`continue-world card-${world.visual} ${index === 0 ? "featured" : ""}`} key={world.id}><p>{index === 0 ? "探索成语" : "探索中"}</p><h3>{world.name}</h3><span>{world.subtitle}</span><ProgressBar value={world.progress} tone={index === 0 ? "gold" : "green"} /><small>{world.chapterLabel}</small>{index === 0 && <b>继续</b>}</Link>)}</div></section></div></div></AppShell>;
+  const profile = useLearningProfile();
+  // API always returns seven daily slots; TypeScript cannot infer this from the runtime response.
+  // @ts-expect-error fixed seven-day activity array
+  return <AppShell title="知识远征" subtitle="探索知识，点亮世界" theme="camp"><div className="camp-scene"><div className="camp-mountain mountain-a" /><div className="camp-mountain mountain-b" /><div className="camp-content"><section className="camp-dashboard"><div className="quest-panel paper-panel"><div className="panel-heading"><div><p className="eyebrow">今日任务</p><h2>向前推进一小段</h2></div><CalendarDays /></div><QuestCard icon={<Check />} title="成语辨析" current={0} total={10} tone="gold" /><QuestCard icon={<Check />} title="公考常识" current={0} total={15} tone="green" /><QuestCard icon={<Brain />} title="到期复习" current={0} total={6} tone="violet" /><Link className="button primary task-cta" to="/battle/idiom-1">开始学习 <ArrowRight /></Link></div><div className="camp-side"><section className="mastery-panel paper-panel"><p className="eyebrow">我的掌握度</p><div className="mastery-main"><ProgressRing value={profile.masteryRate} label="掌握度" /><div><b>{profile.totalQuestions ? `累计完成 ${profile.totalQuestions} 道训练` : "从第一题开始远征"}</b><p>{profile.totalQuestions ? `当前正确率 ${profile.correctRate}% · 累计获得 ${profile.xp} 经验。` : "完成题目后，这里会生成属于你的掌握报告。"}</p><Link to="/profile" className="button outline">查看完整报告</Link></div></div></section><section className="achievement-panel paper-panel"><div><p className="eyebrow">连续学习天数</p><strong>{profile.streak} 天</strong></div><div className="week-streak" aria-label="最近七天学习记录">{weekDays.map((day, index) => <span className={profile.weeklyActivity[index] > 0 ? index === 6 ? "today" : "done" : ""} key={day}><small>{day}</small>{profile.weeklyActivity[index] > 0 ? <Check /> : <i aria-label="未学习" />}</span>)}</div></section></div></section><section className="achievement-strip"><div className="strip-title"><h2>本周记录</h2><Link to="/profile">查看完整报告 <ArrowRight /></Link></div><AchievementBadge icon={<Flame />} title={`连续 ${profile.streak} 天`} caption={profile.streak ? "学习不断步" : "完成第一道题开始累计"} /><AchievementBadge icon={<Trophy />} title={`完成 ${profile.completedLevels} 关`} caption="通关记录会自动保存" /><AchievementBadge icon={<Timer />} title={`掌握 ${profile.masteryCount} 个知识点`} caption="答题后持续更新" /></section><section className="continue-section"><div className="strip-title"><div><p className="eyebrow">继续远征</p><h2>选择下一段旅程</h2></div><Link to="/map">打开大地图 <MapPinned /></Link></div><div className="continue-worlds">{expeditionWorlds.filter(world => !world.locked).slice(0, 4).map((world, index) => <Link to={`/world/${world.id}`} className={`continue-world card-${world.visual} ${index === 0 ? "featured" : ""}`} key={world.id}><p>{index === 0 ? "探索成语" : "探索中"}</p><h3>{world.name}</h3><span>{world.subtitle}</span><ProgressBar value={world.progress} tone={index === 0 ? "gold" : "green"} /><small>{world.chapterLabel}</small>{index === 0 && <b>继续</b>}</Link>)}</div></section></div></div></AppShell>;
 }
 
 function WorldMap() {
@@ -119,8 +140,34 @@ function Graph() {
   </AppShell>;
 }
 
-const profileStats = [{ value: "23", label: "总学习天数", Icon: CalendarDays }, { value: "186", label: "掌握知识点", Icon: Sparkles }, { value: "56", label: "完成关卡", Icon: Swords }, { value: "78%", label: "正确率", Icon: Target }];
-function Profile() { const player = usePlayer(); const authMode = useAuth(state => state.mode); const openDialog = useAuth(state => state.openDialog); return <AppShell title="我的远征" subtitle="每一次学习，都在点亮自己的地图"><section className="profile-page"><div className="profile-hero paper-panel"><span className="profile-avatar">远</span><div><p>{authMode === "guest" ? "游客远征者 · 当前设备保存" : "永久远征者 · 可跨设备同步"}</p><h2>Lv.12</h2><ProgressBar value={65} tone="green" /><small>{player.xp} / 3600 经验</small></div>{authMode === "guest" ? <button type="button" onClick={() => openDialog("bind")}><ShieldCheck /> 保存进度</button> : <Link to="/account" className="profile-account-link"><Settings /> 账号设置</Link>}</div><div className="profile-stats-grid">{profileStats.map(({ value, label, Icon }) => <article className="paper-panel" key={label}><Icon /><b>{value}</b><span>{label}</span></article>)}</div><section className="study-report paper-panel"><div className="panel-heading"><div><p className="eyebrow">学习报告</p><h2>最近 7 天</h2></div><div className="report-tabs"><button className="active">近 7 天</button><button>近 30 天</button><button>全部</button></div></div><div className="report-bars">{[38, 60, 48, 78, 52, 92, 68].map((value, index) => <span key={index}><i style={{ height: `${value}%` }} /><small>周{["一", "二", "三", "四", "五", "六", "日"][index]}</small></span>)}</div></section><section className="badge-collection"><div className="strip-title"><h2>最近获得</h2><span>更多成就</span></div><AchievementBadge icon={<Flame />} title="连胜 5 天" caption="持续远征" /><AchievementBadge icon={<Crown />} title="博学多才" caption="掌握多门知识" /><AchievementBadge icon={<ShieldCheck />} title="历史达人" caption="完成历史路线" /></section></section></AppShell>; }
+function Profile() {
+  const profile = useLearningProfile();
+  const authMode = useAuth(state => state.mode);
+  const user = useAuth(state => state.user);
+  const openDialog = useAuth(state => state.openDialog);
+  const updateDisplayName = useAuth(state => state.updateDisplayName);
+  const [nickname, setNickname] = useState(displayNameFor(user));
+  const [savingName, setSavingName] = useState(false);
+  const [nameError, setNameError] = useState("");
+  const displayName = displayNameFor(user);
+  const avatar = displayName.slice(0, 1) || "远";
+  const activityMax = Math.max(1, ...profile.weeklyActivity);
+  const stats = [
+    { value: profile.studyDays, label: "总学习天数", Icon: CalendarDays },
+    { value: profile.masteryCount, label: "掌握知识点", Icon: Sparkles },
+    { value: profile.completedLevels, label: "完成关卡", Icon: Swords },
+    { value: `${profile.correctRate}%`, label: "正确率", Icon: Target },
+  ];
+  useEffect(() => { setNickname(displayNameFor(user)); }, [user]);
+  async function saveNickname(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSavingName(true); setNameError("");
+    try { await updateDisplayName(nickname); setNickname(nickname.trim().replace(/\s+/g, " ")); }
+    catch (reason) { setNameError(reason instanceof Error ? reason.message : "昵称暂时无法保存，请稍后重试"); }
+    finally { setSavingName(false); }
+  }
+  return <AppShell title="我的远征" subtitle="每一次学习，都在点亮自己的地图"><section className="profile-page"><div className="profile-hero paper-panel"><span className="profile-avatar">{avatar}</span><div><p>{authMode === "guest" ? "游客远征者 · 当前设备保存" : "永久远征者 · 可跨设备同步"}</p><h2>{displayName} · Lv.{levelFor(profile.xp)}</h2><ProgressBar value={Math.min(100, profile.xp / 300 * 100)} tone="green" /><small>{profile.xp} / 300 经验（距离下一等级）</small></div>{authMode === "guest" ? <button type="button" onClick={() => openDialog("bind")}><ShieldCheck /> 保存进度</button> : <Link to="/account" className="profile-account-link"><Settings /> 账号设置</Link>}</div>{authMode === "permanent" && <section className="profile-name-card paper-panel"><div><p className="eyebrow">远征名片</p><h2>修改昵称</h2><p>昵称会同步到顶部个人菜单和你的远征页，支持 2–16 个字符。</p></div><form className="profile-name-form" onSubmit={saveNickname}><label htmlFor="display-name">昵称<input id="display-name" value={nickname} onChange={event => setNickname(event.target.value)} minLength={2} maxLength={16} required /></label><button type="submit" className="button primary" disabled={savingName}>{savingName ? "保存中…" : "保存昵称"}</button>{nameError && <p className="auth-error" role="alert">{nameError}</p>}</form></section>}<div className="profile-stats-grid">{stats.map(({ value, label, Icon }) => <article className="paper-panel" key={label}><Icon /><b>{value}</b><span>{label}</span></article>)}</div><section className="study-report paper-panel"><div className="panel-heading"><div><p className="eyebrow">学习报告</p><h2>最近 7 天</h2></div><div className="report-tabs"><span className="active">真实记录</span></div></div><div className="report-bars">{profile.weeklyActivity.map((value, index) => <span key={index}><i style={{ height: `${value ? Math.max(8, value / activityMax * 100) : 0}%` }} /><small>周{weekDays[index]}</small></span>)}</div>{profile.totalQuestions === 0 && <p className="profile-empty-note">还没有学习记录，完成第一道题后，这里会显示你的真实学习曲线。</p>}</section><section className="badge-collection"><div className="strip-title"><h2>成长记录</h2><span>由你的学习自动生成</span></div><AchievementBadge icon={<Flame />} title={`连续 ${profile.streak} 天`} caption="学习不停步" /><AchievementBadge icon={<Crown />} title={`正确作答 ${profile.correctAnswers} 题`} caption="每次作答都会累计" /><AchievementBadge icon={<ShieldCheck />} title={`已完成 ${profile.completedLevels} 关`} caption="通关记录会自动保存" /></section></section></AppShell>;
+}
 
 function Account() { const mode = useAuth(state => state.mode); const user = useAuth(state => state.user); const signOut = useAuth(state => state.signOut); const openDialog = useAuth(state => state.openDialog); const navigate = useNavigate(); return <AppShell title="账号与隐私" subtitle="你的远征记录由你掌控"><section className="account-page paper-panel"><p className="eyebrow">账号安全</p><h2>{mode === "permanent" ? user?.email ?? "已绑定邮箱" : "当前为游客模式"}</h2><p>{mode === "permanent" ? "此账号可在其他设备上恢复远征进度。" : "游客记录只保留在当前设备；绑定邮箱后可以跨设备同步。"}</p>{mode === "guest" && <button type="button" className="button primary" onClick={() => openDialog("bind")}>保存我的进度</button>}{mode === "permanent" && <button type="button" className="button outline" onClick={() => void signOut().then(() => navigate("/"))}>退出账号</button>}<hr /><h3>隐私与数据</h3><p>我们只使用学习进度、邮箱验证和必要的安全审计数据来提供服务；验证码和完整访问令牌不会被记录。若要删除账号与数据，请从已绑定邮箱发送请求至站点支持邮箱，核验身份后执行。</p><p className="account-links"><a href="/privacy.html">隐私政策</a><a href="/terms.html">用户协议</a></p></section></AppShell>; }
 
